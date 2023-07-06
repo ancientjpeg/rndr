@@ -42,6 +42,7 @@ WGPUAdapter requestWGPUAdapter()
   std::cout << "Got adapter: " << udata.adapter << std::endl;
 
   wgpuInstanceRelease(instance);
+
   return udata.adapter;
 }
 
@@ -64,7 +65,6 @@ WGPUDevice requestWGPUDevice()
   queue_descriptor.label           = nullptr;
   queue_descriptor.nextInChain     = nullptr;
 
-  WGPUDevice           device      = {};
   WGPUDeviceDescriptor descriptor  = {};
   descriptor.requiredFeatures      = features.data();
   descriptor.requiredFeaturesCount = features.size();
@@ -92,7 +92,8 @@ WGPUDevice requestWGPUDevice()
 
   wgpuAdapterRequestDevice(adapter, &deviceDesc, cbk, (void *)&udata);
 
-  std::cout << "Got device: " << device << std::endl;
+  std::cout << "Got device: " << udata.device << std::endl;
+  wgpuAdapterRelease(adapter);
 
-  return device;
+  return udata.device;
 }

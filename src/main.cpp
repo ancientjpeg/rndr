@@ -4,24 +4,13 @@
 
 int main()
 {
-  // Init WebGPU
-  // WGPUInstanceDescriptor desc;
-  // desc.nextInChain      = NULL;
-  // WGPUInstance instance = wgpuCreateInstance(&desc);
-
-  if (!glfwInit()) {
-    std::cerr << "Could not initialize GLFW!" << std::endl;
-    return 1;
-  }
 
   glfwInitHint(GLFW_CLIENT_API, GLFW_NO_API);
   glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-  WGPUDevice device = requestWGPUDevice();
-  return 0;
   GLFWwindow *window
       = glfwCreateWindow(640, 480, "LearnWebGPU", nullptr, nullptr);
 
-  // WGPUSurface surface = glfwGetWGPUSurface(instance, window);
+  // WGPUDevice device = requestWGPUDevice();
 
   if (!window) {
     std::cerr << "GLFW could not open window!" << std::endl;
