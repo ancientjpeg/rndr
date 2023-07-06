@@ -14,16 +14,9 @@ WGPUAdapter requestWGPUAdapter()
   instance_desc.nextInChain            = nullptr;
   WGPUInstance instance                = wgpuCreateInstance(&instance_desc);
 
-  GLFWwindow  *window
-      = glfwCreateWindow(640, 480, "LearnWebGPU", nullptr, nullptr);
-  WGPUSurface surface = glfwGetWGPUSurface(instance, window);
-
   /* elucidate adapter options */
-  WGPURequestAdapterOptions req_adapter_opts;
-  req_adapter_opts.nextInChain          = nullptr;
-  req_adapter_opts.compatibleSurface    = nullptr;
-  req_adapter_opts.powerPreference      = WGPUPowerPreference_HighPerformance;
-  req_adapter_opts.forceFallbackAdapter = false;
+  WGPURequestAdapterOptions req_adapter_opts = {};
+  req_adapter_opts.powerPreference = WGPUPowerPreference_HighPerformance;
 
   /* define user data */
   struct UserData {
@@ -43,12 +36,12 @@ WGPUAdapter requestWGPUAdapter()
   };
 
   /* get adapter */
-  WGPUAdapter adapter = {};
   wgpuInstanceRequestAdapter(instance, &req_adapter_opts, cbk, (void *)&udata);
 
   /* return */
-  std::cout << "Got adapter: " << adapter << std::endl;
+  std::cout << "Got adapter: " << udata.adapter << std::endl;
 
+  wgpuInstanceRelease(instance);
   return udata.adapter;
 }
 
@@ -73,12 +66,14 @@ WGPUDevice requestWGPUDevice()
 
   WGPUDevice           device      = {};
   WGPUDeviceDescriptor descriptor  = {};
-  descriptor.nextInChain           = nullptr;
-  descriptor.label                 = nullptr;
   descriptor.requiredFeatures      = features.data();
   descriptor.requiredFeaturesCount = features.size();
-  descriptor.requiredLimits        = nullptr;
-  descriptor.defaultQueue          = queue_descriptor;
+
+  WGPUDeviceDescriptor deviceDesc  = {};
+  deviceDesc.label                 = "My Device";
+  deviceDesc.requiredFeaturesCount = 0;
+  deviceDesc.requiredLimits        = nullptr;
+  deviceDesc.defaultQueue.label    = "The default queue";
 
   struct UserData {
     WGPUDevice device = nullptr;
@@ -88,14 +83,14 @@ WGPUDevice requestWGPUDevice()
                 char const *message, void *userdata) {
     UserData *udata_ptr = static_cast<UserData *>(userdata);
 
-    if (device != nullptr) {
+    if (device == nullptr) {
       throw std::runtime_error(message);
     }
 
     udata_ptr->device = device;
   };
 
-  wgpuAdapterRequestDevice(adapter, &descriptor, cbk, (void *)&udata);
+  wgpuAdapterRequestDevice(adapter, &deviceDesc, cbk, (void *)&udata);
 
   std::cout << "Got device: " << device << std::endl;
 

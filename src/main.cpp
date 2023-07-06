@@ -1,8 +1,5 @@
 #include "wgpu_init.h"
 #include <GLFW/glfw3.h>
-#include <backends/imgui_impl_glfw.h>
-#include <backends/imgui_impl_wgpu.h>
-#include <imgui.h>
 #include <iostream>
 
 int main()
