@@ -1,4 +1,6 @@
-add_executable(App main.cpp wgpu_init.h)
+add_executable(App main.cpp wgpu_init.cpp)
+
+# see https://github.com/eliemichel/glfw3webgpu
 
 target_include_directories(App PRIVATE ../build/_deps/imgui-src .)
-target_link_libraries(App PRIVATE webgpu glfw)
+target_link_libraries(App PRIVATE webgpu glfw glfw3webgpu)

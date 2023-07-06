@@ -1,5 +1,4 @@
 #include "wgpu_init.h"
-
 #include <GLFW/glfw3.h>
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_wgpu.h>
@@ -8,16 +7,24 @@
 
 int main()
 {
+  // Init WebGPU
+  // WGPUInstanceDescriptor desc;
+  // desc.nextInChain      = NULL;
+  // WGPUInstance instance = wgpuCreateInstance(&desc);
 
-  // WGPUDevice device = requestWGPUDevice();
-  // ImGui_ImplWGPU_Init(device, 3, WGPUTextureFormat_RGBA8Unorm);
   if (!glfwInit()) {
     std::cerr << "Could not initialize GLFW!" << std::endl;
     return 1;
   }
 
+  glfwInitHint(GLFW_CLIENT_API, GLFW_NO_API);
+  glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+  WGPUDevice device = requestWGPUDevice();
+  return 0;
   GLFWwindow *window
       = glfwCreateWindow(640, 480, "LearnWebGPU", nullptr, nullptr);
+
+  // WGPUSurface surface = glfwGetWGPUSurface(instance, window);
 
   if (!window) {
     std::cerr << "GLFW could not open window!" << std::endl;
@@ -32,4 +39,5 @@ int main()
   }
 
   glfwDestroyWindow(window);
+  glfwTerminate();
 }

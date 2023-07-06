@@ -1,10 +1,11 @@
 #include "wgpu_init.h"
+#include "glfw3webgpu.h"
 #include <cassert>
 #include <exception>
 #include <iostream>
 #include <vector>
 
-WGPUAdapter requestAdapter()
+WGPUAdapter requestWGPUAdapter()
 {
   std::cout << "Requesting adapter..." << std::endl;
 
@@ -12,6 +13,10 @@ WGPUAdapter requestAdapter()
   WGPUInstanceDescriptor instance_desc = {};
   instance_desc.nextInChain            = nullptr;
   WGPUInstance instance                = wgpuCreateInstance(&instance_desc);
+
+  GLFWwindow  *window
+      = glfwCreateWindow(640, 480, "LearnWebGPU", nullptr, nullptr);
+  WGPUSurface surface = glfwGetWGPUSurface(instance, window);
 
   /* elucidate adapter options */
   WGPURequestAdapterOptions req_adapter_opts;
@@ -30,7 +35,7 @@ WGPUAdapter requestAdapter()
                 const char *message, void *userdata) {
     UserData *udata_ptr = static_cast<UserData *>(userdata);
 
-    if (adapter != nullptr) {
+    if (adapter == nullptr) {
       throw std::runtime_error(message);
     }
 
@@ -50,13 +55,13 @@ WGPUAdapter requestAdapter()
 WGPUDevice requestWGPUDevice()
 {
   WGPUAdapter adapter;
-  std::cout << "Requesting device..." << std::endl;
   try {
-    adapter = requestAdapter();
+    adapter = requestWGPUAdapter();
   }
   catch (const std::exception &e) {
     throw e;
   }
+  std::cout << "Requesting device..." << std::endl;
 
   size_t feature_count = wgpuAdapterEnumerateFeatures(adapter, nullptr);
   std::vector<WGPUFeatureName> features(feature_count);
