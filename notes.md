@@ -1,0 +1,4 @@
+- Lifecycle
+  - In C++ implementations, it appears that the WebGPU Instance does not need to survive beyond its point of usefulness, i.e. it can be safely released once we're done using it to get an adapter.
+  - The adapter not only can, but _should_ be released after being used to create a device. The spec demands that an adapter become invalid as soon as it's used to create a device, as to ensure that users are always using an up-to-date adapter to generate devices.
+  - The device must live for the duration of its use. Furthermore, objects generated from the device (i.e. child buffers, etc.) should be released _before_ the device is released.
