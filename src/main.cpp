@@ -33,41 +33,35 @@ int                main()
     std::cout << "FINISHED QUEUE WORK" << std::endl;
   };
 
+  WGPUQueue queue = wgpuDeviceGetQueue(globals.device);
+  wgpuQueueOnSubmittedWorkDone(queue, 0, on_queue_finish, nullptr);
+
   WGPUSwapChainDescriptor swap_chain_desc = {};
   swap_chain_desc.nextInChain             = nullptr;
   swap_chain_desc.width                   = w;
   swap_chain_desc.height                  = h;
-  swap_chain_desc.format                  = WGPUTextureFormat_RGBA8Unorm;
+  swap_chain_desc.format                  = WGPUTextureFormat_BGRA8Unorm;
   swap_chain_desc.usage                   = WGPUTextureUsage_RenderAttachment;
   swap_chain_desc.presentMode             = WGPUPresentMode_Fifo;
   WGPUSwapChain swap_chain
       = wgpuDeviceCreateSwapChain(device, surface, &swap_chain_desc);
 
-  WGPUQueue queue = wgpuDeviceGetQueue(globals.device);
-  wgpuQueueOnSubmittedWorkDone(queue, 0, on_queue_finish, nullptr);
-
-  WGPUCommandEncoderDescriptor encoder_desc = {};
-  encoder_desc.nextInChain                  = nullptr;
-  encoder_desc.label                        = "WGPU Default Command Encoder";
-  WGPUCommandEncoder encoder
-      = wgpuDeviceCreateCommandEncoder(globals.device, &encoder_desc);
-  wgpuCommandEncoderInsertDebugMarker(encoder, "BUPPUS");
-
-  WGPUCommandBufferDescriptor command_buffer_desc = {};
-  command_buffer_desc.nextInChain                 = nullptr;
-  command_buffer_desc.label                       = "Command buffer";
-  WGPUCommandBuffer command_buffer
-      = wgpuCommandEncoderFinish(encoder, &command_buffer_desc);
-
-  wgpuQueueSubmit(queue, 1, &command_buffer);
-
-  // wgpuCommandEncoderRelease(encoder);
-  // wgpuCommandBufferRelease(command_buffer);
-
   while (!glfwWindowShouldClose(window)) {
+
     // Check whether the user clicked on the close button (and any other
     // mouse/key event, which we don't use so far)
     glfwPollEvents();
+
+    /* Command Encoder/Buffer Setup */
+    WGPUCommandEncoderDescriptor encoder_desc = {};
+    encoder_desc.nextInChain                  = nullptr;
+    encoder_desc.label                        = "WGPU Default Command Encoder";
+    WGPUCommandEncoder encoder
+        = wgpuDeviceCreateCommandEncoder(globals.device, &encoder_desc);
+
+    WGPUCommandBufferDescriptor command_buffer_desc = {};
+    command_buffer_desc.nextInChain                 = nullptr;
+    command_buffer_desc.label                       = "Command buffer";
 
     WGPUTextureView next_tex = wgpuSwapChainGetCurrentTextureView(swap_chain);
 
@@ -76,15 +70,37 @@ int                main()
       break;
     }
 
-    WGPURenderPassDescriptor pass_desc = {};
-    WGPURenderPassEncoder    pass
+    WGPURenderPassColorAttachment color_attachment = {};
+    color_attachment.nextInChain                   = nullptr;
+    color_attachment.view                          = next_tex;
+    color_attachment.loadOp                        = WGPULoadOp_Clear;
+    color_attachment.storeOp                       = WGPUStoreOp_Store;
+    color_attachment.clearValue                    = {1, 0, 0, 1};
+
+    WGPURenderPassDescriptor pass_desc             = {};
+    pass_desc.label                                = "pass";
+    pass_desc.colorAttachmentCount                 = 1;
+    pass_desc.colorAttachments                     = &color_attachment;
+    pass_desc.timestampWriteCount                  = 0;
+    pass_desc.timestampWrites                      = nullptr;
+    pass_desc.depthStencilAttachment               = nullptr;
+
+    WGPURenderPassEncoder pass
         = wgpuCommandEncoderBeginRenderPass(encoder, &pass_desc);
     wgpuRenderPassEncoderEnd(pass);
-
-    // wgpuRenderPassEncoderRelease(pass);
     wgpuTextureViewRelease(next_tex);
+
+    WGPUCommandBuffer command_buffer
+        = wgpuCommandEncoderFinish(encoder, &command_buffer_desc);
+    wgpuQueueSubmit(queue, 1, &command_buffer);
+
+    wgpuCommandEncoderRelease(encoder);
+    wgpuCommandBufferRelease(command_buffer);
+
+    wgpuSwapChainPresent(swap_chain);
   }
 
+  wgpuSwapChainRelease(swap_chain);
   wgpuQueueRelease(queue);
   wgpuGlobalsRelease(globals);
   glfwDestroyWindow(window);

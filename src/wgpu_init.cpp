@@ -8,7 +8,16 @@
 void wgpu_error_callback(WGPUErrorType type, char const *message, void *)
 {
   std::cerr << "WGPU ERROR TYPE: " << type << std::endl;
-  throw std::runtime_error(std::string("WGPU UNCAUGHT ERROR"));
+  std::cerr << "WGPU ERROR MESSAGE: " << message << std::endl << std::endl;
+}
+
+void wgpu_device_lost_callback(WGPUDeviceLostReason reason,
+                               char const          *message,
+                               void *)
+{
+  std::cerr << "WGPU DEVICE LOST REASON: " << reason << std::endl;
+  std::cerr << "WGPU DEVICE LOST MESSAGE: " << message << std::endl
+            << std::endl;
 }
 
 WGPUAdapter requestWGPUAdapter(WGPUInstance instance)
@@ -104,6 +113,8 @@ WGPUGlobals requestWGPUGlobals()
 
   wgpuDeviceSetUncapturedErrorCallback(globals.device, wgpu_error_callback,
                                        nullptr);
+  wgpuDeviceSetDeviceLostCallback(globals.device, wgpu_device_lost_callback,
+                                  nullptr);
 
   return globals;
 }
