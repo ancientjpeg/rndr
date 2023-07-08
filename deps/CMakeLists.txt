@@ -1,5 +1,6 @@
 include(FetchContent)
 
+
 FetchContent_Declare(
   webgpu
   GIT_REPOSITORY https://github.com/eliemichel/WebGPU-distribution
@@ -14,6 +15,7 @@ FetchContent_Declare(
   GIT_TAG 35b1148efb839381b84de9290d9caf0b66ad7d03 # 1.82
 )
 FetchContent_MakeAvailable(imgui)
+
 
 FetchContent_Declare(
     glfw3webgpu
