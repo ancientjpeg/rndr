@@ -61,14 +61,11 @@ int                    main()
       break;
     }
 
-    /* Command Encoder/Buffer Setup */
+    /* create the command encoder */
     wgpu::CommandEncoderDescriptor encoder_desc = {};
     encoder_desc.nextInChain                    = nullptr;
     encoder_desc.label                          = "Default Command Encoder";
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder(&encoder_desc);
-    wgpu::CommandBufferDescriptor command_buffer_desc = {};
-    command_buffer_desc.nextInChain                   = nullptr;
-    command_buffer_desc.label = "Default Command buffer";
 
     /* describe render pass color attachment */
     wgpu::RenderPassColorAttachment color_attachment = {};
@@ -96,6 +93,11 @@ int                    main()
 
     /* finish encoding render pass */
     pass.End();
+
+    /* describe the command buffer */
+    wgpu::CommandBufferDescriptor command_buffer_desc = {};
+    command_buffer_desc.nextInChain                   = nullptr;
+    command_buffer_desc.label = "Default Command buffer";
 
     /* encode the command buffer, push to queue */
     wgpu::CommandBuffer command_buffer = encoder.Finish(&command_buffer_desc);
