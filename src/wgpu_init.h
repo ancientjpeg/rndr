@@ -11,8 +11,10 @@ struct WGPUGlobals {
   WGPUDevice   device   = nullptr;
 };
 
-WGPUGlobals requestWGPUGlobals();
+WGPUGlobals        requestWGPUGlobals();
 
-void        wgpuGlobalsRelease(WGPUGlobals globals);
+WGPURenderPipeline getWGPURenderPipeline(WGPUGlobals globals);
+
+void               wgpuGlobalsRelease(WGPUGlobals globals);
 
 #endif

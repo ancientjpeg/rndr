@@ -125,3 +125,99 @@ void wgpuGlobalsRelease(WGPUGlobals globals)
   wgpuAdapterRelease(globals.adapter);
   wgpuInstanceRelease(globals.instance);
 }
+
+WGPURenderPipeline getWGPURenderPipeline(WGPUGlobals globals)
+{
+
+  const char *shaderSource = R"(
+@vertex
+fn vs_main(@builtin(vertex_index) in_vertex_index: u32) -> @builtin(position) vec4<f32> {
+	var p = vec2<f32>(0.0, 0.0);
+	if (in_vertex_index == 0u) {
+		p = vec2<f32>(-0.5, -0.5);
+	} else if (in_vertex_index == 1u) {
+		p = vec2<f32>(0.5, -0.5);
+	} else {
+		p = vec2<f32>(0.0, 0.5);
+	}
+	return vec4<f32>(p, 0.0, 1.0);
+}
+
+@fragment
+fn fs_main() -> @location(0) vec4<f32> {
+    return vec4<f32>(0.0, 0.4, 1.0, 1.0);
+}
+)";
+
+  /* create shader module */
+  WGPUShaderModuleWGSLDescriptor shader_code_desc = {};
+  // Set the chained struct's header
+  shader_code_desc.code        = shaderSource;
+  shader_code_desc.chain.next  = nullptr;
+  shader_code_desc.chain.sType = WGPUSType_ShaderModuleWGSLDescriptor;
+
+  WGPUShaderModuleDescriptor shader_module_desc = {};
+  shader_module_desc.label                      = "Default Shader Module";
+  shader_module_desc.nextInChain                = &shader_code_desc.chain;
+  WGPUShaderModule shader_module
+      = wgpuDeviceCreateShaderModule(globals.device, &shader_module_desc);
+
+  WGPURenderPipelineDescriptor pipeline_desc = {};
+  pipeline_desc.nextInChain                  = nullptr;
+
+  /* pipeline describe vertex stage */
+  WGPUVertexState vertex_state = {};
+  vertex_state.module          = shader_module;
+  vertex_state.entryPoint      = "vs_main";
+  vertex_state.bufferCount     = 0;
+  vertex_state.buffers         = nullptr;
+  vertex_state.constantCount   = 0;
+  vertex_state.constants       = nullptr;
+  pipeline_desc.vertex         = std::move(vertex_state);
+
+  /* pipeline describe primitive stage */
+  pipeline_desc.primitive.topology         = WGPUPrimitiveTopology_TriangleList;
+  pipeline_desc.primitive.stripIndexFormat = WGPUIndexFormat_Undefined;
+  pipeline_desc.primitive.frontFace        = WGPUFrontFace_CCW;
+  pipeline_desc.primitive.cullMode         = WGPUCullMode_None;
+
+  /* pipeline describe fragment stage */
+  WGPUBlendState blend_state              = {};
+  blend_state.color.srcFactor             = WGPUBlendFactor_SrcAlpha;
+  blend_state.color.dstFactor             = WGPUBlendFactor_OneMinusSrcAlpha;
+  blend_state.color.operation             = WGPUBlendOperation_Add;
+  blend_state.alpha.srcFactor             = WGPUBlendFactor_One;
+  blend_state.alpha.dstFactor             = WGPUBlendFactor_Zero;
+  blend_state.alpha.operation             = WGPUBlendOperation_Add;
+
+  WGPUColorTargetState color_target_state = {};
+  color_target_state.blend                = &blend_state;
+  color_target_state.format               = WGPUTextureFormat_BGRA8Unorm;
+  color_target_state.writeMask            = WGPUColorWriteMask_All;
+
+  WGPUFragmentState fragment_state        = {};
+  fragment_state.module                   = shader_module;
+  fragment_state.entryPoint               = "fs_main";
+  fragment_state.targetCount              = 1;
+  fragment_state.targets                  = &color_target_state;
+
+  pipeline_desc.fragment                  = &fragment_state;
+
+  /* pipeline depth/stencil settings */
+  pipeline_desc.depthStencil = nullptr;
+
+  /* pipeline describe multisampling */
+  pipeline_desc.multisample.count                  = 1;
+  pipeline_desc.multisample.mask                   = ~0U;
+  pipeline_desc.multisample.alphaToCoverageEnabled = false;
+
+  /* data layout */
+  pipeline_desc.layout = nullptr;
+
+  WGPURenderPipeline ret
+      = wgpuDeviceCreateRenderPipeline(globals.device, &pipeline_desc);
+
+  wgpuShaderModuleRelease(shader_module);
+
+  return ret;
+}
