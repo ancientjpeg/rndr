@@ -1,8 +1,18 @@
 include(FetchContent)
 
 
+if (${WGPU_BACKEND} STREQAL DAWN)
+
+# why does dawn just shove glfw directly into my anus like this
 set(DAWN_BUILD_SAMPLES OFF)
 set(DAWN_USE_GLFW OFF)
+
+else()
+
+message(FATAL_ERROR "Y U NO USE DAWN?? KILL YUORSELF")
+
+endif()
+
 
 FetchContent_Declare(
   webgpu
