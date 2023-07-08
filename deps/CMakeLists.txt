@@ -9,12 +9,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(webgpu)
 
 
-FetchContent_Declare(
-  imgui
-  GIT_REPOSITORY https://github.com/ocornut/imgui
-  GIT_TAG 35b1148efb839381b84de9290d9caf0b66ad7d03 # 1.82
-)
-FetchContent_MakeAvailable(imgui)
+
 
 
 FetchContent_Declare(
