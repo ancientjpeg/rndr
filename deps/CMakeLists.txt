@@ -1,7 +1,7 @@
 include(FetchContent)
 
 
-if (${WGPU_BACKEND} STREQAL DAWN)
+if ("${WEBGPU_BACKEND}" STREQUAL "DAWN")
 
 # why does dawn just shove glfw directly into my anus like this
 set(DAWN_BUILD_SAMPLES OFF)

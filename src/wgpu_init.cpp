@@ -5,14 +5,15 @@
 #include <iostream>
 #include <vector>
 
-WGPUAdapter requestWGPUAdapter()
+void wgpu_error_callback(WGPUErrorType type, char const *message, void *)
+{
+  std::cerr << "WGPU ERROR TYPE: " << type << std::endl;
+  throw std::runtime_error(std::string("WGPU UNCAUGHT ERROR"));
+}
+
+WGPUAdapter requestWGPUAdapter(WGPUInstance instance)
 {
   std::cout << "Requesting adapter..." << std::endl;
-
-  /* get instance */
-  WGPUInstanceDescriptor instance_desc = {};
-  instance_desc.nextInChain            = nullptr;
-  WGPUInstance instance                = wgpuCreateInstance(&instance_desc);
 
   /* elucidate adapter options */
   WGPURequestAdapterOptions req_adapter_opts = {};
@@ -41,20 +42,11 @@ WGPUAdapter requestWGPUAdapter()
   /* return */
   std::cout << "Got adapter: " << udata.adapter << std::endl;
 
-  wgpuInstanceRelease(instance);
-
   return udata.adapter;
 }
 
-WGPUDevice requestWGPUDevice()
+WGPUDevice requestWGPUDevice(WGPUAdapter adapter)
 {
-  WGPUAdapter adapter;
-  try {
-    adapter = requestWGPUAdapter();
-  }
-  catch (const std::exception &e) {
-    throw e;
-  }
   std::cout << "Requesting device..." << std::endl;
 
   size_t feature_count = wgpuAdapterEnumerateFeatures(adapter, nullptr);
@@ -70,10 +62,10 @@ WGPUDevice requestWGPUDevice()
   descriptor.requiredFeaturesCount = features.size();
 
   WGPUDeviceDescriptor deviceDesc  = {};
-  deviceDesc.label                 = "My Device";
+  deviceDesc.label                 = "WGPU Default Device";
   deviceDesc.requiredFeaturesCount = 0;
   deviceDesc.requiredLimits        = nullptr;
-  deviceDesc.defaultQueue.label    = "The default queue";
+  deviceDesc.defaultQueue.label    = "WGPU Default Queue";
 
   struct UserData {
     WGPUDevice device = nullptr;
@@ -93,7 +85,32 @@ WGPUDevice requestWGPUDevice()
   wgpuAdapterRequestDevice(adapter, &deviceDesc, cbk, (void *)&udata);
 
   std::cout << "Got device: " << udata.device << std::endl;
-  wgpuAdapterRelease(adapter);
 
   return udata.device;
+}
+
+WGPUGlobals requestWGPUGlobals()
+{
+
+  WGPUGlobals globals;
+
+  /* get instance */
+  WGPUInstanceDescriptor instance_desc = {};
+  instance_desc.nextInChain            = nullptr;
+
+  globals.instance                     = wgpuCreateInstance(&instance_desc);
+  globals.adapter                      = requestWGPUAdapter(globals.instance);
+  globals.device                       = requestWGPUDevice(globals.adapter);
+
+  wgpuDeviceSetUncapturedErrorCallback(globals.device, wgpu_error_callback,
+                                       nullptr);
+
+  return globals;
+}
+
+void wgpuGlobalsRelease(WGPUGlobals globals)
+{
+  wgpuDeviceRelease(globals.device);
+  wgpuAdapterRelease(globals.adapter);
+  wgpuInstanceRelease(globals.instance);
 }
