@@ -33,7 +33,8 @@ void wgpu_device_lost_callback(WGPUDeviceLostReason reason,
             << std::endl;
 }
 
-wgpu::Adapter requestWGPUAdapter(wgpu::Instance instance)
+wgpu::Adapter requestWGPUAdapter(wgpu::Instance &instance,
+                                 wgpu::Surface  &surface)
 {
   std::cout << "Requesting adapter..." << std::endl;
 
@@ -41,7 +42,7 @@ wgpu::Adapter requestWGPUAdapter(wgpu::Instance instance)
   wgpu::RequestAdapterOptions req_adapter_opts = {};
   req_adapter_opts.powerPreference = wgpu::PowerPreference::HighPerformance;
   req_adapter_opts.forceFallbackAdapter = false;
-  // req_adapter_opts.compatibleSurface    = surface;
+  req_adapter_opts.compatibleSurface    = surface;
 
   /* define user data */
   struct UserData {
@@ -109,7 +110,7 @@ wgpu::Device requestWGPUDevice(wgpu::Adapter adapter)
   return udata.device;
 }
 
-Globals requestGlobals()
+Globals requestGlobals(GLFWwindow *window)
 {
 
   Globals globals;
@@ -119,8 +120,11 @@ Globals requestGlobals()
   instance_desc.nextInChain              = nullptr;
 
   globals.instance                       = wgpu::CreateInstance(&instance_desc);
-  globals.adapter                        = requestWGPUAdapter(globals.instance);
-  globals.device                         = requestWGPUDevice(globals.adapter);
+  globals.surface                        = wgpu::Surface::Acquire(
+      glfwGetWGPUSurface(globals.instance.Get(), window));
+
+  globals.adapter = requestWGPUAdapter(globals.instance, globals.surface);
+  globals.device  = requestWGPUDevice(globals.adapter);
 
   globals.device.SetUncapturedErrorCallback(wgpu_error_callback, nullptr);
   globals.device.SetDeviceLostCallback(wgpu_device_lost_callback, nullptr);
@@ -133,11 +137,16 @@ wgpu::RenderPipeline createRenderPipeline(Globals globals)
 
   const char *shaderSource = R"(
 @vertex
-fn vs_main(@builtin(vertex_index) in_vertex_index: u32) -> @builtin(position)
-vec4<f32> { 	var p = vec2<f32>(0.0, 0.0); 	if (in_vertex_index == 0u) {
-p =
-vec2<f32>(-0.5, -0.5); 	} else if (in_vertex_index == 1u) { p = vec2<f32>(0.5, -0.5); 	} else { 		p = vec2<f32>(0.0, 0.5);
-	}
+fn vs_main(@builtin(vertex_index) in_vertex_index: u32) -> @builtin(position) vec4<f32> 
+{ 	
+  var p = vec2<f32>(0.0, 0.0); 	
+  if (in_vertex_index == 0u) {
+    p = vec2<f32>(-0.5, -0.8); 	
+  } else if (in_vertex_index == 1u) { 
+    p = vec2<f32>(0.5, -0.5); 	
+  } else { 		
+    p = vec2<f32>(0.0, 0.5);
+  }
 	return vec4<f32>(p, 0.0, 1.0);
 }
 
@@ -145,6 +154,7 @@ vec2<f32>(-0.5, -0.5); 	} else if (in_vertex_index == 1u) { p = vec2<f32>(0.5, -
 fn fs_main() -> @location(0) vec4<f32> {
     return vec4<f32>(0.0, 0.4, 1.0, 1.0);
 }
+
 )";
 
   /* create shader module */

@@ -24,11 +24,8 @@ int                    main()
     return 1;
   }
 
-  globals     = jkwgpu::requestGlobals();
-  auto device = globals.device;
-
-  /* include this as compatible surface for the adapter in the future */
-  auto surface         = glfwGetWGPUSurface(globals.instance.Get(), window);
+  globals              = jkwgpu::requestGlobals(window);
+  auto device          = globals.device;
 
   auto on_queue_finish = [](WGPUQueueWorkDoneStatus status, void *) {
     std::cout << "FINISHED QUEUE WORK" << std::endl;
@@ -44,7 +41,7 @@ int                    main()
   swap_chain_desc.usage       = wgpu::TextureUsage::RenderAttachment;
   swap_chain_desc.presentMode = wgpu::PresentMode::Fifo;
   wgpu::SwapChain swap_chain
-      = device.CreateSwapChain(surface, &swap_chain_desc);
+      = device.CreateSwapChain(globals.surface, &swap_chain_desc);
   wgpu::RenderPipeline pipeline = jkwgpu::createRenderPipeline(globals);
 
   while (!glfwWindowShouldClose(window)) {
