@@ -1,9 +1,22 @@
-#include "wgpu_init.h"
+/**
+ * @file init.cpp
+ * @author Jackson Wyatt Kaplan (JwyattK@gmail.com)
+ * @brief
+ * @version 0.1
+ * @date 2023-07-08
+ *
+ * @copyright Copyright (c) 2023
+ *
+ */
+
+#include "helpers.h"
 #include "glfw3webgpu.h"
-#include <cassert>
+
 #include <exception>
 #include <iostream>
 #include <vector>
+
+namespace jkwgpu {
 
 void wgpu_error_callback(WGPUErrorType type, char const *message, void *)
 {
@@ -98,10 +111,10 @@ WGPUDevice requestWGPUDevice(WGPUAdapter adapter)
   return udata.device;
 }
 
-WGPUGlobals requestWGPUGlobals()
+Globals requestGlobals()
 {
 
-  WGPUGlobals globals;
+  Globals globals;
 
   /* get instance */
   WGPUInstanceDescriptor instance_desc = {};
@@ -119,14 +132,14 @@ WGPUGlobals requestWGPUGlobals()
   return globals;
 }
 
-void wgpuGlobalsRelease(WGPUGlobals globals)
+void releaseGlobals(Globals globals)
 {
   wgpuDeviceRelease(globals.device);
   wgpuAdapterRelease(globals.adapter);
   wgpuInstanceRelease(globals.instance);
 }
 
-WGPURenderPipeline getWGPURenderPipeline(WGPUGlobals globals)
+WGPURenderPipeline createRenderPipeline(Globals globals)
 {
 
   const char *shaderSource = R"(
@@ -221,3 +234,5 @@ fn fs_main() -> @location(0) vec4<f32> {
 
   return ret;
 }
+
+} // namespace jkwgpu

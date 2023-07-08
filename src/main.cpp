@@ -1,14 +1,15 @@
-#include "wgpu_init.h"
+#include "jkwgpu/helpers.h"
+#include "jkwgpu/ops.h"
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_wgpu.h>
 #include <imgui.h>
 #include <iostream>
 
-static WGPUGlobals globals;
-constexpr int      w = 640;
-constexpr int      h = 480;
+static jkwgpu::Globals globals;
+constexpr int          w = 640;
+constexpr int          h = 480;
 
-int                main()
+int                    main()
 {
 
   glfwInitHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -23,7 +24,7 @@ int                main()
     return 1;
   }
 
-  globals     = requestWGPUGlobals();
+  globals     = jkwgpu::requestGlobals();
   auto device = globals.device;
 
   /* include this as compatible surface for the adapter in the future */
@@ -46,7 +47,7 @@ int                main()
   WGPUSwapChain swap_chain
       = wgpuDeviceCreateSwapChain(device, surface, &swap_chain_desc);
 
-  WGPURenderPipeline pipeline = getWGPURenderPipeline(globals);
+  WGPURenderPipeline pipeline = jkwgpu::createRenderPipeline(globals);
 
   while (!glfwWindowShouldClose(window)) {
 
@@ -117,7 +118,7 @@ int                main()
   wgpuRenderPipelineRelease(pipeline);
   wgpuSwapChainRelease(swap_chain);
   wgpuQueueRelease(queue);
-  wgpuGlobalsRelease(globals);
+  jkwgpu::releaseGlobals(globals);
   glfwDestroyWindow(window);
   glfwTerminate();
 }

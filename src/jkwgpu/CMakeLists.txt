@@ -1,0 +1,3 @@
+set(WGPU_SRC ${CMAKE_CURRENT_SOURCE_DIR}/ops.cpp ${CMAKE_CURRENT_SOURCE_DIR}/helpers.cpp)
+
+target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${WGPU_SRC})
