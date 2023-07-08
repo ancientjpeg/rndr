@@ -10,6 +10,7 @@
  */
 
 #include "glfw3webgpu.h"
+#include "webgpu/webgpu_cpp.h"
 
 #ifndef WGPU_HELPERS_H
 #define WGPU_HELPERS_H
@@ -17,16 +18,14 @@
 namespace jkwgpu {
 
 struct Globals {
-  WGPUInstance instance = nullptr;
-  WGPUAdapter  adapter  = nullptr;
-  WGPUDevice   device   = nullptr;
+  wgpu::Instance instance = nullptr;
+  wgpu::Adapter  adapter  = nullptr;
+  wgpu::Device   device   = nullptr;
 };
 
-Globals            requestGlobals();
+Globals              requestGlobals();
 
-WGPURenderPipeline createRenderPipeline(Globals globals);
-
-void               releaseGlobals(Globals globals);
+wgpu::RenderPipeline createRenderPipeline(Globals globals);
 
 } // namespace jkwgpu
 

@@ -33,17 +33,19 @@ void wgpu_device_lost_callback(WGPUDeviceLostReason reason,
             << std::endl;
 }
 
-WGPUAdapter requestWGPUAdapter(WGPUInstance instance)
+wgpu::Adapter requestWGPUAdapter(wgpu::Instance instance)
 {
   std::cout << "Requesting adapter..." << std::endl;
 
   /* elucidate adapter options */
-  WGPURequestAdapterOptions req_adapter_opts = {};
-  req_adapter_opts.powerPreference = WGPUPowerPreference_HighPerformance;
+  wgpu::RequestAdapterOptions req_adapter_opts = {};
+  req_adapter_opts.powerPreference = wgpu::PowerPreference::HighPerformance;
+  req_adapter_opts.forceFallbackAdapter = false;
+  // req_adapter_opts.compatibleSurface    = surface;
 
   /* define user data */
   struct UserData {
-    WGPUAdapter adapter = nullptr;
+    wgpu::Adapter adapter;
   } udata;
 
   /* define callback */
@@ -55,42 +57,38 @@ WGPUAdapter requestWGPUAdapter(WGPUInstance instance)
       throw std::runtime_error(message);
     }
 
-    udata_ptr->adapter = adapter;
+    udata_ptr->adapter = wgpu::Adapter::Acquire(adapter);
   };
 
   /* get adapter */
-  wgpuInstanceRequestAdapter(instance, &req_adapter_opts, cbk, (void *)&udata);
+  instance.RequestAdapter(&req_adapter_opts, cbk, (void *)&udata);
 
   /* return */
-  std::cout << "Got adapter: " << udata.adapter << std::endl;
+  std::cout << "Got adapter: " << udata.adapter.Get() << std::endl;
 
-  return udata.adapter;
+  return std::move(udata.adapter);
 }
 
-WGPUDevice requestWGPUDevice(WGPUAdapter adapter)
+wgpu::Device requestWGPUDevice(wgpu::Adapter adapter)
 {
   std::cout << "Requesting device..." << std::endl;
 
-  size_t feature_count = wgpuAdapterEnumerateFeatures(adapter, nullptr);
-  std::vector<WGPUFeatureName> features(feature_count);
-  wgpuAdapterEnumerateFeatures(adapter, features.data());
+  /* check adapter features */
+  size_t feature_count = adapter.EnumerateFeatures(nullptr);
+  std::vector<wgpu::FeatureName> features(feature_count);
+  adapter.EnumerateFeatures(features.data());
 
-  WGPUQueueDescriptor queue_descriptor;
-  queue_descriptor.label           = nullptr;
-  queue_descriptor.nextInChain     = nullptr;
-
-  WGPUDeviceDescriptor descriptor  = {};
-  descriptor.requiredFeatures      = features.data();
-  descriptor.requiredFeaturesCount = features.size();
-
-  WGPUDeviceDescriptor deviceDesc  = {};
-  deviceDesc.label                 = "WGPU Default Device";
-  deviceDesc.requiredFeaturesCount = 0;
-  deviceDesc.requiredLimits        = nullptr;
-  deviceDesc.defaultQueue.label    = "WGPU Default Queue";
+  /* describe the device */
+  wgpu::DeviceDescriptor descriptor = {};
+  descriptor.requiredFeatures       = nullptr;
+  descriptor.requiredFeaturesCount  = 0;
+  descriptor.requiredFeaturesCount  = 0;
+  descriptor.requiredLimits         = nullptr;
+  descriptor.label                  = "WGPU Default Device";
+  descriptor.defaultQueue.label     = "WGPU Default Queue";
 
   struct UserData {
-    WGPUDevice device = nullptr;
+    wgpu::Device device = nullptr;
   } udata;
 
   auto cbk = [](WGPURequestDeviceStatus status, WGPUDevice device,
@@ -101,12 +99,12 @@ WGPUDevice requestWGPUDevice(WGPUAdapter adapter)
       throw std::runtime_error(message);
     }
 
-    udata_ptr->device = device;
+    udata_ptr->device = wgpu::Device::Acquire(device);
   };
 
-  wgpuAdapterRequestDevice(adapter, &deviceDesc, cbk, (void *)&udata);
+  adapter.RequestDevice(&descriptor, cbk, (void *)&udata);
 
-  std::cout << "Got device: " << udata.device << std::endl;
+  std::cout << "Got device: " << udata.device.Get() << std::endl;
 
   return udata.device;
 }
@@ -117,41 +115,28 @@ Globals requestGlobals()
   Globals globals;
 
   /* get instance */
-  WGPUInstanceDescriptor instance_desc = {};
-  instance_desc.nextInChain            = nullptr;
+  wgpu::InstanceDescriptor instance_desc = {};
+  instance_desc.nextInChain              = nullptr;
 
-  globals.instance                     = wgpuCreateInstance(&instance_desc);
-  globals.adapter                      = requestWGPUAdapter(globals.instance);
-  globals.device                       = requestWGPUDevice(globals.adapter);
+  globals.instance                       = wgpu::CreateInstance(&instance_desc);
+  globals.adapter                        = requestWGPUAdapter(globals.instance);
+  globals.device                         = requestWGPUDevice(globals.adapter);
 
-  wgpuDeviceSetUncapturedErrorCallback(globals.device, wgpu_error_callback,
-                                       nullptr);
-  wgpuDeviceSetDeviceLostCallback(globals.device, wgpu_device_lost_callback,
-                                  nullptr);
+  globals.device.SetUncapturedErrorCallback(wgpu_error_callback, nullptr);
+  globals.device.SetDeviceLostCallback(wgpu_device_lost_callback, nullptr);
 
   return globals;
 }
 
-void releaseGlobals(Globals globals)
-{
-  wgpuDeviceRelease(globals.device);
-  wgpuAdapterRelease(globals.adapter);
-  wgpuInstanceRelease(globals.instance);
-}
-
-WGPURenderPipeline createRenderPipeline(Globals globals)
+wgpu::RenderPipeline createRenderPipeline(Globals globals)
 {
 
   const char *shaderSource = R"(
 @vertex
-fn vs_main(@builtin(vertex_index) in_vertex_index: u32) -> @builtin(position) vec4<f32> {
-	var p = vec2<f32>(0.0, 0.0);
-	if (in_vertex_index == 0u) {
-		p = vec2<f32>(-0.5, -0.5);
-	} else if (in_vertex_index == 1u) {
-		p = vec2<f32>(0.5, -0.5);
-	} else {
-		p = vec2<f32>(0.0, 0.5);
+fn vs_main(@builtin(vertex_index) in_vertex_index: u32) -> @builtin(position)
+vec4<f32> { 	var p = vec2<f32>(0.0, 0.0); 	if (in_vertex_index == 0u) {
+p =
+vec2<f32>(-0.5, -0.5); 	} else if (in_vertex_index == 1u) { p = vec2<f32>(0.5, -0.5); 	} else { 		p = vec2<f32>(0.0, 0.5);
 	}
 	return vec4<f32>(p, 0.0, 1.0);
 }
@@ -163,58 +148,56 @@ fn fs_main() -> @location(0) vec4<f32> {
 )";
 
   /* create shader module */
-  WGPUShaderModuleWGSLDescriptor shader_code_desc = {};
+  wgpu::ShaderModuleWGSLDescriptor shader_code_desc = {};
   // Set the chained struct's header
-  shader_code_desc.code        = shaderSource;
-  shader_code_desc.chain.next  = nullptr;
-  shader_code_desc.chain.sType = WGPUSType_ShaderModuleWGSLDescriptor;
+  shader_code_desc.code                           = shaderSource;
 
-  WGPUShaderModuleDescriptor shader_module_desc = {};
-  shader_module_desc.label                      = "Default Shader Module";
-  shader_module_desc.nextInChain                = &shader_code_desc.chain;
-  WGPUShaderModule shader_module
-      = wgpuDeviceCreateShaderModule(globals.device, &shader_module_desc);
+  wgpu::ShaderModuleDescriptor shader_module_desc = {};
+  shader_module_desc.label                        = "Default Shader Module";
+  shader_module_desc.nextInChain                  = &shader_code_desc;
+  wgpu::ShaderModule shader_module
+      = globals.device.CreateShaderModule(&shader_module_desc);
 
-  WGPURenderPipelineDescriptor pipeline_desc = {};
-  pipeline_desc.nextInChain                  = nullptr;
+  wgpu::RenderPipelineDescriptor pipeline_desc = {};
+  pipeline_desc.nextInChain                    = nullptr;
 
   /* pipeline describe vertex stage */
-  WGPUVertexState vertex_state = {};
-  vertex_state.module          = shader_module;
-  vertex_state.entryPoint      = "vs_main";
-  vertex_state.bufferCount     = 0;
-  vertex_state.buffers         = nullptr;
-  vertex_state.constantCount   = 0;
-  vertex_state.constants       = nullptr;
-  pipeline_desc.vertex         = std::move(vertex_state);
+  wgpu::VertexState vertex_state = {};
+  vertex_state.module            = shader_module;
+  vertex_state.entryPoint        = "vs_main";
+  vertex_state.bufferCount       = 0;
+  vertex_state.buffers           = nullptr;
+  vertex_state.constantCount     = 0;
+  vertex_state.constants         = nullptr;
+  pipeline_desc.vertex           = std::move(vertex_state);
 
   /* pipeline describe primitive stage */
-  pipeline_desc.primitive.topology         = WGPUPrimitiveTopology_TriangleList;
-  pipeline_desc.primitive.stripIndexFormat = WGPUIndexFormat_Undefined;
-  pipeline_desc.primitive.frontFace        = WGPUFrontFace_CCW;
-  pipeline_desc.primitive.cullMode         = WGPUCullMode_None;
+  pipeline_desc.primitive.topology = wgpu::PrimitiveTopology::TriangleList;
+  pipeline_desc.primitive.stripIndexFormat = wgpu::IndexFormat::Undefined;
+  pipeline_desc.primitive.frontFace        = wgpu::FrontFace::CCW;
+  pipeline_desc.primitive.cullMode         = wgpu::CullMode::None;
 
   /* pipeline describe fragment stage */
-  WGPUBlendState blend_state              = {};
-  blend_state.color.srcFactor             = WGPUBlendFactor_SrcAlpha;
-  blend_state.color.dstFactor             = WGPUBlendFactor_OneMinusSrcAlpha;
-  blend_state.color.operation             = WGPUBlendOperation_Add;
-  blend_state.alpha.srcFactor             = WGPUBlendFactor_One;
-  blend_state.alpha.dstFactor             = WGPUBlendFactor_Zero;
-  blend_state.alpha.operation             = WGPUBlendOperation_Add;
+  wgpu::BlendState blend_state = {};
+  blend_state.color.srcFactor  = wgpu::BlendFactor::SrcAlpha;
+  blend_state.color.dstFactor  = wgpu::BlendFactor::OneMinusSrcAlpha;
+  blend_state.color.operation  = wgpu::BlendOperation::Add;
+  blend_state.alpha.srcFactor  = wgpu::BlendFactor::One;
+  blend_state.alpha.dstFactor  = wgpu::BlendFactor::Zero;
+  blend_state.alpha.operation  = wgpu::BlendOperation::Add;
 
-  WGPUColorTargetState color_target_state = {};
-  color_target_state.blend                = &blend_state;
-  color_target_state.format               = WGPUTextureFormat_BGRA8Unorm;
-  color_target_state.writeMask            = WGPUColorWriteMask_All;
+  wgpu::ColorTargetState color_target_state = {};
+  color_target_state.blend                  = &blend_state;
+  color_target_state.format                 = wgpu::TextureFormat::BGRA8Unorm;
+  color_target_state.writeMask              = wgpu::ColorWriteMask::All;
 
-  WGPUFragmentState fragment_state        = {};
-  fragment_state.module                   = shader_module;
-  fragment_state.entryPoint               = "fs_main";
-  fragment_state.targetCount              = 1;
-  fragment_state.targets                  = &color_target_state;
+  wgpu::FragmentState fragment_state        = {};
+  fragment_state.module                     = shader_module;
+  fragment_state.entryPoint                 = "fs_main";
+  fragment_state.targetCount                = 1;
+  fragment_state.targets                    = &color_target_state;
 
-  pipeline_desc.fragment                  = &fragment_state;
+  pipeline_desc.fragment                    = &fragment_state;
 
   /* pipeline depth/stencil settings */
   pipeline_desc.depthStencil = nullptr;
@@ -227,10 +210,8 @@ fn fs_main() -> @location(0) vec4<f32> {
   /* data layout */
   pipeline_desc.layout = nullptr;
 
-  WGPURenderPipeline ret
-      = wgpuDeviceCreateRenderPipeline(globals.device, &pipeline_desc);
-
-  wgpuShaderModuleRelease(shader_module);
+  wgpu::RenderPipeline ret
+      = globals.device.CreateRenderPipeline(&pipeline_desc);
 
   return ret;
 }
