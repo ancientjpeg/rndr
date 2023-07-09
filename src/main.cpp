@@ -44,8 +44,53 @@ int                    main()
       = device.CreateSwapChain(globals.surface, &swap_chain_desc);
   wgpu::RenderPipeline pipeline = jkwgpu::createRenderPipeline(globals);
 
+  /* buffer write test */
+  wgpu::BufferDescriptor buffer_desc;
+  buffer_desc.label = "Some GPU-side data buffer";
+  buffer_desc.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::CopySrc;
+  buffer_desc.size  = 16 * sizeof(float);
+  buffer_desc.mappedAtCreation = false;
+  wgpu::Buffer buffer1         = device.CreateBuffer(&buffer_desc);
+
+  buffer_desc.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::MapRead;
+  wgpu::Buffer       buffer2 = device.CreateBuffer(&buffer_desc);
+
+  std::vector<float> nums(16), nums_out(16);
+  std::fill(nums.begin(), nums.end(), 5.2f);
+  std::fill(nums_out.begin(), nums_out.end(), 0.2f);
+
+  queue.WriteBuffer(buffer1, 0, nums.data(), nums.size() * sizeof(float));
+
+  wgpu::CommandEncoderDescriptor enc_desc{};
+  wgpu::CommandEncoder           enc = device.CreateCommandEncoder(&enc_desc);
+  enc.CopyBufferToBuffer(buffer1, 0, buffer2, 0, 16 * sizeof(float));
+  wgpu::CommandBufferDescriptor buf_desc{};
+  wgpu::CommandBuffer           temp_cbuf = enc.Finish(&buf_desc);
+  queue.Submit(1, &temp_cbuf);
+
+  /* buffer 2 map operation */
+  struct Context {
+    std::vector<float> &out;
+    wgpu::Buffer        buffer;
+  };
+  Context ctx{nums_out, buffer2};
+
+  auto    cbk = [](WGPUBufferMapAsyncStatus status, void *userdata) {
+    auto  *ctx_ptr = (Context *)userdata;
+
+    float *range
+        = (float *)ctx_ptr->buffer.GetConstMappedRange(0, 16 * sizeof(float));
+    std::copy(range, range + 16, ctx_ptr->out.data());
+    std::cout << "BUFFER2 COPY SUCCESS" << std::endl;
+    ctx_ptr->buffer.Unmap();
+  };
+
+  buffer2.MapAsync(wgpu::MapMode::Read, 0, 16 * sizeof(float), cbk, &ctx);
+
   while (!glfwWindowShouldClose(window)) {
 
+    /* check async ops */
+    device.Tick();
     // Check whether the user clicked on the close button (and any other
     // mouse/key event, which we don't use so far)
     glfwPollEvents();
@@ -103,6 +148,9 @@ int                    main()
     /* finally, present the next texture */
     swap_chain.Present();
   }
+
+  buffer1.Destroy();
+  buffer2.Destroy();
 
   glfwDestroyWindow(window);
   glfwTerminate();
