@@ -12,6 +12,7 @@
 #ifndef JKWGPU_MATH_H_
 #define JKWGPU_MATH_H_
 
+#include "matrix.h"
 #include <numeric>
 
 namespace jkwgpu {

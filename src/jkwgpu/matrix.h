@@ -31,7 +31,7 @@ public:
 
   matrix(std::initializer_list<T> init)
   {
-    static_assert(sizeof(init) <= size_);
+    assert(init.size() <= size_);
     std::copy(init.begin(), init.end(), data_.begin());
   }
 
@@ -58,13 +58,13 @@ public:
 
   T &at(size_t m, size_t n)
   {
-    assert(m >= M || n >= N);
+    assert(m < M && n < N);
     return data_[m * N + n];
   }
 
   const T &at(size_t m, size_t n) const
   {
-    assert(m >= M || n >= N);
+    assert(m < M && n < N);
     return data_[m * N + n];
   }
 
@@ -74,14 +74,15 @@ public:
   }
 
   template <size_t P>
-  friend matrix operator*(matrix<M, P, T> lhs, const matrix<P, N, T> &rhs)
+  friend matrix operator*(const matrix<M, P, T> &lhs,
+                          const matrix<P, N, T> &rhs)
   {
     matrix ret;
-    size_t m = 0, n = 0, p = 0;
-    for (; m < M; ++m) {
-      for (; n < N; ++n) {
+    size_t m, n, p;
+    for (m = 0; m < M; ++m) {
+      for (n = 0; n < N; ++n) {
         T sum{};
-        for (; p < P; ++p) {
+        for (p = 0; p < P; ++p) {
           sum += lhs.at(m, p) * rhs.at(p, n);
         }
         ret.at(m, n) = sum;
