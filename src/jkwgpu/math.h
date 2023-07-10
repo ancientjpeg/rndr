@@ -9,14 +9,13 @@
  *
  */
 
-#include <array>
+#ifndef JKWGPU_MATH_H_
+#define JKWGPU_MATH_H_
+
 #include <numeric>
 
 namespace jkwgpu {
 namespace math {
-
-template <size_t... Dims>
-struct matrix {};
 
 template <typename T, typename... Scalars>
 T length(Scalars... scalars)
@@ -34,3 +33,5 @@ T length(Scalars... scalars)
 
 } // namespace math
 } // namespace jkwgpu
+
+#endif
