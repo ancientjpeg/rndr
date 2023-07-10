@@ -1,4 +1,5 @@
 #include "jkwgpu/helpers.h"
+#include "jkwgpu/math.h"
 #include "jkwgpu/ops.h"
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_wgpu.h>
@@ -42,6 +43,7 @@ int                    main()
   swap_chain_desc.presentMode = wgpu::PresentMode::Fifo;
   wgpu::SwapChain swap_chain
       = device.CreateSwapChain(globals.surface, &swap_chain_desc);
+
   wgpu::RenderPipeline pipeline = jkwgpu::createRenderPipeline(globals);
 
   /* buffer write test */
