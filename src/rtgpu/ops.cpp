@@ -11,6 +11,6 @@
 
 #include "ops.h"
 
-namespace jkwgpu {
+namespace rtgpu {
 
-} // namespace jkwgpu
+} // namespace rtgpu

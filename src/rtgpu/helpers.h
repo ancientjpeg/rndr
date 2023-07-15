@@ -15,7 +15,7 @@
 #ifndef WGPU_HELPERS_H
 #define WGPU_HELPERS_H
 
-namespace jkwgpu {
+namespace rtgpu {
 
 struct Globals {
   wgpu::Instance instance;
@@ -28,6 +28,6 @@ Globals              requestGlobals(GLFWwindow *window);
 
 wgpu::RenderPipeline createRenderPipeline(Globals globals);
 
-} // namespace jkwgpu
+} // namespace rtgpu
 
 #endif

@@ -1,16 +1,16 @@
-#include "jkwgpu/helpers.h"
-#include "jkwgpu/math.h"
-#include "jkwgpu/ops.h"
+#include "rtgpu/helpers.h"
+#include "rtgpu/math.h"
+#include "rtgpu/ops.h"
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_wgpu.h>
 #include <imgui.h>
 #include <iostream>
 
-static jkwgpu::Globals globals;
-constexpr int          w = 640;
-constexpr int          h = 480;
+static rtgpu::Globals globals;
+constexpr int         w = 640;
+constexpr int         h = 480;
 
-int                    main()
+int                   main()
 {
 
   glfwInitHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -25,7 +25,7 @@ int                    main()
     return 1;
   }
 
-  globals              = jkwgpu::requestGlobals(window);
+  globals              = rtgpu::requestGlobals(window);
   auto device          = globals.device;
 
   auto on_queue_finish = [](WGPUQueueWorkDoneStatus status, void *) {
@@ -44,7 +44,7 @@ int                    main()
   wgpu::SwapChain swap_chain
       = device.CreateSwapChain(globals.surface, &swap_chain_desc);
 
-  wgpu::RenderPipeline pipeline = jkwgpu::createRenderPipeline(globals);
+  wgpu::RenderPipeline pipeline = rtgpu::createRenderPipeline(globals);
 
   /* buffer write test */
   wgpu::BufferDescriptor buffer_desc;

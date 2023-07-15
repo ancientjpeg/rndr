@@ -9,14 +9,14 @@
  *
  */
 
-#ifndef JKWGPU_MATRIX_H_
-#define JKWGPU_MATRIX_H_
+#ifndef RTGPU_MATRIX_H_
+#define RTGPU_MATRIX_H_
 
 #include <array>
 #include <cassert>
 #include <exception>
 
-namespace jkwgpu {
+namespace rtgpu {
 namespace math {
 
 template <size_t M, size_t N, typename T = float>
@@ -97,6 +97,6 @@ private:
 };
 
 } // namespace math
-} // namespace jkwgpu
+} // namespace rtgpu
 
 #endif

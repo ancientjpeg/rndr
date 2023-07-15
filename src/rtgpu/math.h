@@ -9,13 +9,13 @@
  *
  */
 
-#ifndef JKWGPU_MATH_H_
-#define JKWGPU_MATH_H_
+#ifndef RTGPU_MATH_H_
+#define RTGPU_MATH_H_
 
 #include "matrix.h"
 #include <numeric>
 
-namespace jkwgpu {
+namespace rtgpu {
 namespace math {
 
 template <typename T, typename... Scalars>
@@ -33,6 +33,6 @@ T length(Scalars... scalars)
 }
 
 } // namespace math
-} // namespace jkwgpu
+} // namespace rtgpu
 
 #endif

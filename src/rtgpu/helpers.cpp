@@ -16,7 +16,7 @@
 #include <iostream>
 #include <vector>
 
-namespace jkwgpu {
+namespace rtgpu {
 
 void wgpu_error_callback(WGPUErrorType type, char const *message, void *)
 {
@@ -226,4 +226,4 @@ fn fs_main() -> @location(0) vec4<f32> {
   return ret;
 }
 
-} // namespace jkwgpu
+} // namespace rtgpu

@@ -11,10 +11,10 @@
 
 #include "helpers.h"
 
-#ifndef JKWGPU_OPS_H_
-#define JKWGPU_OPS_H_
+#ifndef RTGPU_OPS_H_
+#define RTGPU_OPS_H_
 
-namespace jkwgpu {
+namespace rtgpu {
 
 }
 
