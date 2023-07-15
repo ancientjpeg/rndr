@@ -1,3 +1,4 @@
+#include "rtgpu/application.h"
 #include "rtgpu/helpers.h"
 #include "rtgpu/math.h"
 #include "rtgpu/ops.h"
@@ -12,6 +13,7 @@ constexpr int         h = 480;
 
 int                   main()
 {
+  rtgpu::Application app;
 
   glfwInitHint(GLFW_CLIENT_API, GLFW_NO_API);
   glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);

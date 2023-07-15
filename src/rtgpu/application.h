@@ -13,12 +13,18 @@
 #define RTGPU_APPLICATION_H_
 
 #include "webgpu/webgpu_cpp.h"
+#include <filesystem>
+#include <iostream>
+
+#ifndef RTGPU_SUPPORT_DIR
+#error "Must define rtgpu support directory."
+#endif
 
 namespace rtgpu {
 
 class Application {
 public:
-  Application()  = default;
+  Application();
   ~Application() = default;
 
   /* non-copyable */
@@ -33,10 +39,13 @@ public:
 
 private:
   /* Global WGPU objects */
-  wgpu::Instance instance_;
-  wgpu::Surface  surface_;
-  wgpu::Adapter  adapter_;
-  wgpu::Device   device_;
+  wgpu::Instance        instance_;
+  wgpu::Surface         surface_;
+  wgpu::Adapter         adapter_;
+  wgpu::Device          device_;
+
+  std::filesystem::path support_dir;
+  std::filesystem::path shader_dir;
 
   /* Global GLFW objects */
 
