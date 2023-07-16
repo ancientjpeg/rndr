@@ -13,8 +13,9 @@
 #define RTGPU_APPLICATION_H_
 
 #include "webgpu/webgpu_cpp.h"
+#include <GLFW/glfw3.h>
 #include <filesystem>
-#include <iostream>
+#include <map>
 
 #ifndef RTGPU_SUPPORT_DIR
 #error "Must define rtgpu support directory."
@@ -35,22 +36,42 @@ public:
   Application(Application &&)            = delete;
   Application &operator=(Application &&) = delete;
 
-  void         Initialize();
+  void setRequiredFeatures(std::vector<wgpu::FeatureName> required_features);
+  void setRequiredLimits(wgpu::Limits required_limits);
+
+  /**
+   * @brief Initialize all global WebGPU and GLFW objects.
+   *
+   * @note `initialize()` can throw.
+   *
+   * @param width Initial width of the screen, in pixels
+   * @param height Initial height of the screen, in pixels
+   */
+  void Initialize(int width = 640, int height = 480);
 
 private:
-  /* Global WGPU objects */
-  wgpu::Instance        instance_;
-  wgpu::Surface         surface_;
-  wgpu::Adapter         adapter_;
-  wgpu::Device          device_;
+  void collectShaderSource_(bool rescan = false);
 
-  std::filesystem::path support_dir;
-  std::filesystem::path shader_dir;
+  /* Global WGPU objects */
+  wgpu::Instance                 instance_;
+  wgpu::Surface                  surface_;
+  wgpu::Adapter                  adapter_;
+  wgpu::Device                   device_;
+
+  std::filesystem::path          support_dir_       = {};
+  std::filesystem::path          shader_dir_        = {};
+
+  std::vector<wgpu::FeatureName> required_features_ = {};
+  wgpu::RequiredLimits           required_limits_   = {};
 
   /* Global GLFW objects */
+  GLFWwindow *window_ = {};
 
-  int width_  = 0;
-  int height_ = 0;
+  /* Shader storage */
+  std::map<std::string, std::string> shader_code_ = {};
+
+  int                                width_       = 0;
+  int                                height_      = 0;
 };
 
 } // namespace rtgpu

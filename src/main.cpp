@@ -14,6 +14,9 @@ constexpr int         h = 480;
 int                   main()
 {
   rtgpu::Application app;
+  app.Initialize();
+
+  return 0;
 
   glfwInitHint(GLFW_CLIENT_API, GLFW_NO_API);
   glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);

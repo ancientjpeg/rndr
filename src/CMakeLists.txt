@@ -8,8 +8,8 @@ target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE imgui glfw3webgpu webgpu_cpp
 
 get_target_property(MY_PROJECT_SOURCES ${CMAKE_PROJECT_NAME} SOURCES)
 
-message("LISTING SOURCES")
-message(${MY_PROJECT_SOURCES})
+# message("LISTING SOURCES")
+# message(${MY_PROJECT_SOURCES})
 
 set(RTGPU_SUPPORT_DIR /usr/local/share/rtgpu)
 install(CODE "MESSAGE(\"Installing shaders\")")

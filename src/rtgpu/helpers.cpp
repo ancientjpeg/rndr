@@ -226,4 +226,22 @@ fn fs_main() -> @location(0) vec4<f32> {
   return ret;
 }
 
+namespace helpers {
+void default_device_lost_callback(WGPUDeviceLostReason reason,
+                                  char const          *message,
+                                  void                *userdata)
+{
+  if (reason != WGPUDeviceLostReason_Destroyed) {
+    throw std::runtime_error(message);
+  }
+}
+
+void default_error_callback(WGPUErrorType type,
+                            char const   *message,
+                            void         *userdata)
+{
+  throw std::runtime_error(message);
+}
+} // namespace helpers
+
 } // namespace rtgpu

@@ -28,6 +28,17 @@ Globals              requestGlobals(GLFWwindow *window);
 
 wgpu::RenderPipeline createRenderPipeline(Globals globals);
 
+namespace helpers {
+
+void default_device_lost_callback(WGPUDeviceLostReason reason,
+                                  char const          *message,
+                                  void                *userdata);
+
+void default_error_callback(WGPUErrorType type,
+                            char const   *message,
+                            void         *userdata);
+} // namespace helpers
+
 } // namespace rtgpu
 
 #endif
