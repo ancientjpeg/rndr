@@ -113,8 +113,16 @@ void Application::Initialize(int width, int height)
     }
   }
 
-  /* Request device */
+  /* Test limits */
+  SupportedLimits supported_limits = {};
+  adapter_.GetLimits(&supported_limits);
 
+  if (!helpers::limits_supported(supported_limits.limits,
+                                 required_limits_.limits)) {
+    throw std::runtime_error("Cannot support required limits");
+  }
+
+  /* Request device */
   DeviceDescriptor device_desc      = {};
   device_desc.requiredFeatures      = available_features.data();
   device_desc.requiredFeaturesCount = available_features.size();

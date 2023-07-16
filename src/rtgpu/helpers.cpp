@@ -243,6 +243,148 @@ void default_error_callback(WGPUErrorType type,
 {
   throw std::runtime_error(message);
 }
+
+template <typename T>
+bool limits_test(T sup, T req, T def)
+{
+  return sup >= req || req == def;
+}
+
+bool limits_supported(wgpu::Limits required_limits,
+                      wgpu::Limits supported_limits)
+{
+  wgpu::Limits def  = {};
+  bool         temp = true;
+  temp              = temp
+         && limits_test(supported_limits.maxTextureDimension1D,
+                        required_limits.maxTextureDimension1D,
+                        def.maxTextureDimension1D);
+  temp = temp
+         && limits_test(supported_limits.maxTextureDimension2D,
+                        required_limits.maxTextureDimension2D,
+                        def.maxTextureDimension2D);
+  temp = temp
+         && limits_test(supported_limits.maxTextureDimension3D,
+                        required_limits.maxTextureDimension3D,
+                        def.maxTextureDimension3D);
+  temp = temp
+         && limits_test(supported_limits.maxTextureArrayLayers,
+                        required_limits.maxTextureArrayLayers,
+                        def.maxTextureArrayLayers);
+  temp = temp
+         && limits_test(supported_limits.maxBindGroups,
+                        required_limits.maxBindGroups, def.maxBindGroups);
+  temp = temp
+         && limits_test(supported_limits.maxBindGroupsPlusVertexBuffers,
+                        required_limits.maxBindGroupsPlusVertexBuffers,
+                        def.maxBindGroupsPlusVertexBuffers);
+  temp = temp
+         && limits_test(supported_limits.maxBindingsPerBindGroup,
+                        required_limits.maxBindingsPerBindGroup,
+                        def.maxBindingsPerBindGroup);
+  temp = temp
+         && limits_test(
+             supported_limits.maxDynamicUniformBuffersPerPipelineLayout,
+             required_limits.maxDynamicUniformBuffersPerPipelineLayout,
+             def.maxDynamicUniformBuffersPerPipelineLayout);
+  temp = temp
+         && limits_test(
+             supported_limits.maxDynamicStorageBuffersPerPipelineLayout,
+             required_limits.maxDynamicStorageBuffersPerPipelineLayout,
+             def.maxDynamicStorageBuffersPerPipelineLayout);
+  temp = temp
+         && limits_test(supported_limits.maxSampledTexturesPerShaderStage,
+                        required_limits.maxSampledTexturesPerShaderStage,
+                        def.maxSampledTexturesPerShaderStage);
+  temp = temp
+         && limits_test(supported_limits.maxSamplersPerShaderStage,
+                        required_limits.maxSamplersPerShaderStage,
+                        def.maxSamplersPerShaderStage);
+  temp = temp
+         && limits_test(supported_limits.maxStorageBuffersPerShaderStage,
+                        required_limits.maxStorageBuffersPerShaderStage,
+                        def.maxStorageBuffersPerShaderStage);
+  temp = temp
+         && limits_test(supported_limits.maxStorageTexturesPerShaderStage,
+                        required_limits.maxStorageTexturesPerShaderStage,
+                        def.maxStorageTexturesPerShaderStage);
+  temp = temp
+         && limits_test(supported_limits.maxUniformBuffersPerShaderStage,
+                        required_limits.maxUniformBuffersPerShaderStage,
+                        def.maxUniformBuffersPerShaderStage);
+  temp = temp
+         && limits_test(supported_limits.maxUniformBufferBindingSize,
+                        required_limits.maxUniformBufferBindingSize,
+                        def.maxUniformBufferBindingSize);
+  temp = temp
+         && limits_test(supported_limits.maxStorageBufferBindingSize,
+                        required_limits.maxStorageBufferBindingSize,
+                        def.maxStorageBufferBindingSize);
+  temp = temp
+         && limits_test(supported_limits.minUniformBufferOffsetAlignment,
+                        required_limits.minUniformBufferOffsetAlignment,
+                        def.minUniformBufferOffsetAlignment);
+  temp = temp
+         && limits_test(supported_limits.minStorageBufferOffsetAlignment,
+                        required_limits.minStorageBufferOffsetAlignment,
+                        def.minStorageBufferOffsetAlignment);
+  temp = temp
+         && limits_test(supported_limits.maxVertexBuffers,
+                        required_limits.maxVertexBuffers, def.maxVertexBuffers);
+  temp = temp
+         && limits_test(supported_limits.maxBufferSize,
+                        required_limits.maxBufferSize, def.maxBufferSize);
+  temp = temp
+         && limits_test(supported_limits.maxVertexAttributes,
+                        required_limits.maxVertexAttributes,
+                        def.maxVertexAttributes);
+  temp = temp
+         && limits_test(supported_limits.maxVertexBufferArrayStride,
+                        required_limits.maxVertexBufferArrayStride,
+                        def.maxVertexBufferArrayStride);
+  temp = temp
+         && limits_test(supported_limits.maxInterStageShaderComponents,
+                        required_limits.maxInterStageShaderComponents,
+                        def.maxInterStageShaderComponents);
+  temp = temp
+         && limits_test(supported_limits.maxInterStageShaderVariables,
+                        required_limits.maxInterStageShaderVariables,
+                        def.maxInterStageShaderVariables);
+  temp = temp
+         && limits_test(supported_limits.maxColorAttachments,
+                        required_limits.maxColorAttachments,
+                        def.maxColorAttachments);
+  temp = temp
+         && limits_test(supported_limits.maxColorAttachmentBytesPerSample,
+                        required_limits.maxColorAttachmentBytesPerSample,
+                        def.maxColorAttachmentBytesPerSample);
+  temp = temp
+         && limits_test(supported_limits.maxComputeWorkgroupStorageSize,
+                        required_limits.maxComputeWorkgroupStorageSize,
+                        def.maxComputeWorkgroupStorageSize);
+  temp = temp
+         && limits_test(supported_limits.maxComputeInvocationsPerWorkgroup,
+                        required_limits.maxComputeInvocationsPerWorkgroup,
+                        def.maxComputeInvocationsPerWorkgroup);
+  temp = temp
+         && limits_test(supported_limits.maxComputeWorkgroupSizeX,
+                        required_limits.maxComputeWorkgroupSizeX,
+                        def.maxComputeWorkgroupSizeX);
+  temp = temp
+         && limits_test(supported_limits.maxComputeWorkgroupSizeY,
+                        required_limits.maxComputeWorkgroupSizeY,
+                        def.maxComputeWorkgroupSizeY);
+  temp = temp
+         && limits_test(supported_limits.maxComputeWorkgroupSizeZ,
+                        required_limits.maxComputeWorkgroupSizeZ,
+                        def.maxComputeWorkgroupSizeZ);
+  temp = temp
+         && limits_test(supported_limits.maxComputeWorkgroupsPerDimension,
+                        required_limits.maxComputeWorkgroupsPerDimension,
+                        def.maxComputeWorkgroupsPerDimension);
+  return temp;
+}
+
 } // namespace helpers
 
 } // namespace rtgpu

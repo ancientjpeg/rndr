@@ -37,6 +37,10 @@ void default_device_lost_callback(WGPUDeviceLostReason reason,
 void default_error_callback(WGPUErrorType type,
                             char const   *message,
                             void         *userdata);
+
+bool limits_supported(wgpu::Limits required_limits,
+                      wgpu::Limits supported_limits);
+
 } // namespace helpers
 
 } // namespace rtgpu
