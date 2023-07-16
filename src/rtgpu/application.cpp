@@ -90,7 +90,6 @@ void Application::Initialize(int width, int height)
                            &adapter_req_promise);
 
   try {
-
     adapter_ = Adapter::Acquire(adapter_req_future.get());
     std::cout << "Successfully acquired adapter at address:" << adapter_.Get()
               << std::endl;
@@ -121,6 +120,31 @@ void Application::Initialize(int width, int height)
   device_desc.requiredFeaturesCount = available_features.size();
   device_desc.requiredLimits        = &required_limits_;
   device_desc.label                 = "rtgpu Application Device";
+
+  std::promise<WGPUDevice> device_req_promise;
+  std::future<WGPUDevice>  device_req_future = device_req_promise.get_future();
+
+  adapter_.RequestDevice(
+      &device_desc,
+      [](WGPURequestDeviceStatus status, WGPUDevice device, char const *message,
+         void *userdata) {
+        if (status != WGPURequestDeviceStatus_Success) {
+          throw std::runtime_error(message);
+        }
+        static_cast<std::promise<WGPUDevice> *>(userdata)->set_value(device);
+      },
+      &device_req_promise);
+
+  try {
+    device_ = Device::Acquire(device_req_future.get());
+    std::cout << "Successfully acquired device at address:" << device_.Get()
+              << std::endl;
+  }
+  catch (std::exception &e) {
+    std::cerr << "Device request failed with following message: " << e.what()
+              << std::endl;
+    throw e;
+  }
 
   /* set default callbacks */
   device_.SetDeviceLostCallback(helpers::default_device_lost_callback, nullptr);

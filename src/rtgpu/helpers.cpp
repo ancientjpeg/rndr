@@ -234,6 +234,7 @@ void default_device_lost_callback(WGPUDeviceLostReason reason,
   if (reason != WGPUDeviceLostReason_Destroyed) {
     throw std::runtime_error(message);
   }
+  std::cout << "Device successfully destroyed.";
 }
 
 void default_error_callback(WGPUErrorType type,
