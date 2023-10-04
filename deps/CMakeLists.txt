@@ -9,7 +9,7 @@ set(DAWN_USE_GLFW OFF)
 
 else()
 
-message(FATAL_ERROR "Y U NO USE DAWN?? KILL YUORSELF")
+message(FATAL_ERROR "if you dont use dawn im kill you")
 
 endif()
 
