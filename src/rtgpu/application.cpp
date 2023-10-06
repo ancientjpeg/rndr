@@ -46,7 +46,7 @@ void Application::setRequiredLimits(Limits required_limits)
 }
 
 /* INITIALIZE */
-void Application::Initialize(int width, int height)
+void Application::initialize(int width, int height)
 {
   width_  = width;
   height_ = height;

@@ -47,7 +47,7 @@ public:
    * @param width Initial width of the screen, in pixels
    * @param height Initial height of the screen, in pixels
    */
-  void Initialize(int width = 640, int height = 480);
+  void initialize(int width = 640, int height = 480);
 
 private:
   void collectShaderSource_(bool rescan = false);

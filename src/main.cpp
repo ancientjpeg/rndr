@@ -1,6 +1,5 @@
 #include "rtgpu/application.h"
 #include "rtgpu/helpers.h"
-#include "rtgpu/math.h"
 #include "rtgpu/ops.h"
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_wgpu.h>
@@ -14,7 +13,7 @@ constexpr int         h = 480;
 int                   main()
 {
   rtgpu::Application app;
-  app.Initialize();
+  app.initialize();
 
   return 0;
 
