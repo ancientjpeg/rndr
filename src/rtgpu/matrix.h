@@ -14,7 +14,6 @@
 
 #include <array>
 #include <cassert>
-#include <exception>
 
 namespace rtgpu {
 namespace math {
