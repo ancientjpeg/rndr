@@ -15,7 +15,7 @@
 #ifndef WGPU_HELPERS_H
 #define WGPU_HELPERS_H
 
-namespace rtgpu {
+namespace rndr {
 
 struct Globals {
   wgpu::Instance instance;
@@ -43,6 +43,6 @@ bool limits_supported(wgpu::Limits required_limits,
 
 } // namespace helpers
 
-} // namespace rtgpu
+} // namespace rndr
 
 #endif

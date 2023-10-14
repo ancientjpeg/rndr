@@ -20,7 +20,7 @@
 
 using std::literals::string_literals::operator""s;
 
-namespace rtgpu {
+namespace rndr {
 
 using namespace wgpu;
 
@@ -105,6 +105,9 @@ void Application::initialize(int width, int height)
       adapter_.EnumerateFeatures(nullptr));
   adapter_.EnumerateFeatures(available_features.data());
 
+  std::sort(available_features.begin(), available_features.end());
+  std::sort(required_features_.begin(), required_features_.end());
+
   for (FeatureName feature : required_features_) {
     if (std::find(available_features.begin(), available_features.end(), feature)
         == available_features.end()) {
@@ -127,7 +130,7 @@ void Application::initialize(int width, int height)
   device_desc.requiredFeatures      = available_features.data();
   device_desc.requiredFeaturesCount = available_features.size();
   device_desc.requiredLimits        = &required_limits_;
-  device_desc.label                 = "rtgpu Application Device";
+  device_desc.label                 = "rndr Application Device";
 
   std::promise<WGPUDevice> device_req_promise;
   std::future<WGPUDevice>  device_req_future = device_req_promise.get_future();
@@ -184,4 +187,4 @@ void Application::collectShaderSource_(bool rescan)
   }
 }
 
-} // namespace rtgpu
+} // namespace rndr

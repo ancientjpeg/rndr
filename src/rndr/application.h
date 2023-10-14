@@ -18,10 +18,10 @@
 #include <map>
 
 #ifndef RTGPU_SUPPORT_DIR
-#error "Must define rtgpu support directory."
+#error "Must define rndr support directory."
 #endif
 
-namespace rtgpu {
+namespace rndr {
 
 class Application {
 public:
@@ -79,6 +79,6 @@ private:
   int                                 height_      = 0;
 };
 
-} // namespace rtgpu
+} // namespace rndr
 
 #endif

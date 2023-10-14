@@ -16,7 +16,7 @@
 #include <iostream>
 #include <vector>
 
-namespace rtgpu {
+namespace rndr {
 
 void wgpu_error_callback(WGPUErrorType type, char const *message, void *)
 {
@@ -387,4 +387,4 @@ bool limits_supported(wgpu::Limits required_limits,
 
 } // namespace helpers
 
-} // namespace rtgpu
+} // namespace rndr

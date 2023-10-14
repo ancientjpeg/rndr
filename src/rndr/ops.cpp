@@ -1,5 +1,5 @@
 /**
- * @file ops.h
+ * @file ops.cpp
  * @author Jackson Wyatt Kaplan (JwyattK@gmail.com)
  * @brief
  * @version 0.1
@@ -9,13 +9,8 @@
  *
  */
 
-#include "helpers.h"
+#include "ops.h"
 
-#ifndef RTGPU_OPS_H_
-#define RTGPU_OPS_H_
+namespace rndr {
 
-namespace rtgpu {
-
-}
-
-#endif
+} // namespace rndr

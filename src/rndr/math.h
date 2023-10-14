@@ -15,7 +15,7 @@
 #include "matrix.h"
 #include <numeric>
 
-namespace rtgpu {
+namespace rndr {
 namespace math {
 
 template <typename T, typename... Scalars>
@@ -33,6 +33,6 @@ T length(Scalars... scalars)
 }
 
 } // namespace math
-} // namespace rtgpu
+} // namespace rndr
 
 #endif

@@ -1,18 +1,18 @@
-#include "rtgpu/application.h"
-#include "rtgpu/helpers.h"
-#include "rtgpu/ops.h"
+#include "rndr/application.h"
+#include "rndr/helpers.h"
+#include "rndr/ops.h"
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_wgpu.h>
 #include <imgui.h>
 #include <iostream>
 
-static rtgpu::Globals globals;
-constexpr int         w = 640;
-constexpr int         h = 480;
+static rndr::Globals globals;
+constexpr int        w = 640;
+constexpr int        h = 480;
 
-int                   main()
+int                  main()
 {
-  rtgpu::Application app;
+  rndr::Application app;
   app.initialize();
 
   return 0;
@@ -29,7 +29,7 @@ int                   main()
     return 1;
   }
 
-  globals              = rtgpu::requestGlobals(window);
+  globals              = rndr::requestGlobals(window);
   auto device          = globals.device;
 
   auto on_queue_finish = [](WGPUQueueWorkDoneStatus status, void *) {
@@ -48,7 +48,7 @@ int                   main()
   wgpu::SwapChain swap_chain
       = device.CreateSwapChain(globals.surface, &swap_chain_desc);
 
-  wgpu::RenderPipeline pipeline = rtgpu::createRenderPipeline(globals);
+  wgpu::RenderPipeline pipeline = rndr::createRenderPipeline(globals);
 
   /* buffer write test */
   wgpu::BufferDescriptor buffer_desc;

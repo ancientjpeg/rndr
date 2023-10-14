@@ -15,7 +15,7 @@
 #include <array>
 #include <cassert>
 
-namespace rtgpu {
+namespace rndr {
 namespace math {
 
 template <size_t M, size_t N, typename T = float>
@@ -96,6 +96,6 @@ private:
 };
 
 } // namespace math
-} // namespace rtgpu
+} // namespace rndr
 
 #endif
