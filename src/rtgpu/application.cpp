@@ -179,7 +179,7 @@ void Application::collectShaderSource_(bool rescan)
       if (shader_code_.count(name) != 0 && rescan) {
         throw std::runtime_error("DUPLICATE SHADER");
       }
-      shader_code_[name] = out.str();
+      shader_code_[name] = {name, p, out.str()};
     }
   }
 }

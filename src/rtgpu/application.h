@@ -68,10 +68,15 @@ private:
   GLFWwindow *window_ = {};
 
   /* Shader storage */
-  std::map<std::string, std::string> shader_code_ = {};
+  struct ShaderSource {
+    std::string           name;
+    std::filesystem::path path;
+    std::string           source;
+  };
+  std::map<std::string, ShaderSource> shader_code_ = {};
 
-  int                                width_       = 0;
-  int                                height_      = 0;
+  int                                 width_       = 0;
+  int                                 height_      = 0;
 };
 
 } // namespace rtgpu
