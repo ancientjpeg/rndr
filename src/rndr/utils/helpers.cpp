@@ -12,7 +12,6 @@
 #include "helpers.h"
 #include "glfw3webgpu.h"
 
-#include <exception>
 #include <iostream>
 #include <vector>
 

@@ -47,20 +47,22 @@ public:
    * @param width Initial width of the screen, in pixels
    * @param height Initial height of the screen, in pixels
    */
-  void initialize(int width = 640, int height = 480);
+  void                initialize(int width = 640, int height = 480);
+
+  bool                addShaderSource(std::string path);
+
+  wgpu::TextureFormat get_preferred_texture_format();
 
 private:
   void collectShaderSource_(bool rescan = false);
 
   /* Global WGPU objects */
-  wgpu::Instance                 instance_;
-  wgpu::Surface                  surface_;
-  wgpu::Adapter                  adapter_;
-  wgpu::Device                   device_;
+  wgpu::Instance instance_;
+  wgpu::Surface  surface_;
+  wgpu::Adapter  adapter_;
+  wgpu::Device   device_;
 
-  std::filesystem::path          support_dir_       = {};
-  std::filesystem::path          shader_dir_        = {};
-
+  /* Features and limits */
   std::vector<wgpu::FeatureName> required_features_ = {};
   wgpu::RequiredLimits           required_limits_   = {};
 
@@ -74,6 +76,9 @@ private:
     std::string           source;
   };
   std::map<std::string, ShaderSource> shader_code_ = {};
+
+  std::filesystem::path               support_dir_ = {};
+  std::filesystem::path               shader_dir_  = {};
 
   int                                 width_       = 0;
   int                                 height_      = 0;

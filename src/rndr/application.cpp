@@ -11,7 +11,7 @@
 
 #include "application.h"
 #include "glfw3webgpu.h"
-#include "helpers.h"
+#include "utils/helpers.h"
 #include <cassert>
 #include <fstream>
 #include <future>
@@ -30,6 +30,7 @@ Application::Application()
   assert(support_dir_.is_absolute() && std::filesystem::exists(support_dir_));
   assert(shader_dir_.is_absolute() && std::filesystem::exists(shader_dir_));
 
+  /** @todo DELETE! */
   collectShaderSource_(true);
 }
 
@@ -162,6 +163,27 @@ void Application::initialize(int width, int height)
   device_.SetUncapturedErrorCallback(helpers::default_error_callback, nullptr);
 }
 
+bool Application::addShaderSource(std::string path)
+{
+  namespace fs = std::filesystem;
+  auto p       = fs::path(std::move(path));
+  if (!fs::exists(p) || p.extension() != ".wgsl") {
+    return false;
+  }
+
+  std::stringstream out;
+  std::ifstream     ifs(p.string());
+  out << ifs.rdbuf();
+
+  auto name = p.string().substr(shader_dir_.string().size() + 1);
+  if (shader_code_.count(name) != 0) {
+    throw std::runtime_error("DUPLICATE SHADER");
+    return false;
+  }
+  shader_code_[name] = {name, p, out.str()};
+  return true;
+}
+
 void Application::collectShaderSource_(bool rescan)
 {
 
@@ -173,17 +195,7 @@ void Application::collectShaderSource_(bool rescan)
 
   for (auto const &dir_entry : fs::recursive_directory_iterator{shader_dir_}) {
     auto p = dir_entry.path();
-    if (p.extension() == ".wgsl") {
-      std::stringstream out;
-      std::ifstream     ifs(dir_entry.path().string());
-      out << ifs.rdbuf();
-
-      auto name = p.string().substr(shader_dir_.string().size() + 1);
-      if (shader_code_.count(name) != 0 && rescan) {
-        throw std::runtime_error("DUPLICATE SHADER");
-      }
-      shader_code_[name] = {name, p, out.str()};
-    }
+    addShaderSource(p);
   }
 }
 
