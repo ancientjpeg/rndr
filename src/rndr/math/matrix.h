@@ -21,8 +21,12 @@ namespace math {
 template <size_t M, size_t N, typename T = float>
 class mat {
 public:
-  using type        = T;
-  using transpose_t = mat<N, M, T>;
+  using type                   = T;
+  using transpose_t            = mat<N, M, T>;
+
+  static constexpr size_t size = M * N;
+
+  static_assert(size * sizeof(T) < 512);
 
   mat()
   {
@@ -31,13 +35,13 @@ public:
 
   mat(std::initializer_list<T> init)
   {
-    assert(init.size() <= size_);
+    assert(init.size() <= size);
     std::copy(init.begin(), init.end(), data_.begin());
   }
 
   std::vector<T> to_vector() const
   {
-    std::vector<T> ret(size_);
+    std::vector<T> ret(size);
 
     return ret;
   }
@@ -68,9 +72,18 @@ public:
     return data_[m * N + n];
   }
 
-  constexpr size_t size() const
+  template <typename = std::enable_if_t<N == 1>>
+  T &at(size_t m)
   {
-    return size_;
+    assert(m < M);
+    return data_[m];
+  }
+
+  template <typename = std::enable_if_t<N == 1>>
+  const T &at(size_t m) const
+  {
+    assert(m < M);
+    return data_[m];
   }
 
   template <size_t P>
@@ -91,9 +104,17 @@ public:
   }
 
 private:
-  static constexpr size_t size_ = M * N;
-  std::array<T, size_>    data_;
+  std::array<T, size> data_;
+  friend bool         operator==(mat<M, N, T> mat0, mat<M, N, T> mat1);
 };
+
+template <size_t M, size_t N, typename T = float>
+bool operator==(mat<M, N, T> mat0, mat<M, N, T> mat1)
+{
+  return mat0.size() == mat1.size()
+         && std::memcmp(mat0.data_.data(), mat1.data.data(),
+                        sizeof(T) * mat0.size());
+}
 
 template <size_t M, typename T = mat<M, 1>::type>
 using vec = mat<M, 1, T>;
