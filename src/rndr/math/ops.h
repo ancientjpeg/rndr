@@ -9,10 +9,10 @@
  *
  */
 
-#include "helpers.h"
+#include "utils/helpers.h"
 
-#ifndef RTGPU_OPS_H_
-#define RTGPU_OPS_H_
+#ifndef RNDR_OPS_H_
+#define RNDR_OPS_H_
 
 namespace rndr {
 

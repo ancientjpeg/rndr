@@ -9,10 +9,9 @@
  *
  */
 
-#ifndef RTGPU_MATH_H_
-#define RTGPU_MATH_H_
+#ifndef RNDR_MATH_H_
+#define RNDR_MATH_H_
 
-#include "matrix.h"
 #include <numeric>
 
 namespace rndr {

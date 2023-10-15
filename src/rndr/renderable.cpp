@@ -8,3 +8,19 @@
  * @copyright Copyright (c) 2023
  *
  */
+#include "renderable.h"
+#include <fstream>
+
+namespace rndr {
+
+std::optional<RenderableObject>
+RenderableObject::fromFile(std::filesystem::path path)
+{
+  using namespace std::filesystem;
+
+  std::ifstream ifs(path);
+
+  return std::nullopt;
+}
+
+} // namespace rndr

@@ -9,8 +9,8 @@
  *
  */
 
-#ifndef RTGPU_MATRIX_H_
-#define RTGPU_MATRIX_H_
+#ifndef RNDR_MATRIX_H_
+#define RNDR_MATRIX_H_
 
 #include <array>
 #include <cassert>
@@ -19,16 +19,17 @@ namespace rndr {
 namespace math {
 
 template <size_t M, size_t N, typename T = float>
-class matrix {
+class mat {
 public:
-  using transpose_t = matrix<N, M, T>;
+  using type        = T;
+  using transpose_t = mat<N, M, T>;
 
-  matrix()
+  mat()
   {
     std::fill(data_.begin(), data_.end(), T{});
   }
 
-  matrix(std::initializer_list<T> init)
+  mat(std::initializer_list<T> init)
   {
     assert(init.size() <= size_);
     std::copy(init.begin(), init.end(), data_.begin());
@@ -73,10 +74,9 @@ public:
   }
 
   template <size_t P>
-  friend matrix operator*(const matrix<M, P, T> &lhs,
-                          const matrix<P, N, T> &rhs)
+  friend mat operator*(const mat<M, P, T> &lhs, const mat<P, N, T> &rhs)
   {
-    matrix ret;
+    mat    ret;
     size_t m, n, p;
     for (m = 0; m < M; ++m) {
       for (n = 0; n < N; ++n) {
@@ -94,6 +94,9 @@ private:
   static constexpr size_t size_ = M * N;
   std::array<T, size_>    data_;
 };
+
+template <size_t M, typename T = mat<M, 1>::type>
+using vec = mat<M, 1, T>;
 
 } // namespace math
 } // namespace rndr

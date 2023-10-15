@@ -9,15 +9,15 @@
  *
  */
 
-#ifndef RTGPU_APPLICATION_H_
-#define RTGPU_APPLICATION_H_
+#ifndef RNDR_APPLICATION_H_
+#define RNDR_APPLICATION_H_
 
 #include "webgpu/webgpu_cpp.h"
 #include <GLFW/glfw3.h>
 #include <filesystem>
 #include <map>
 
-#ifndef RTGPU_SUPPORT_DIR
+#ifndef RNDR_SUPPORT_DIR
 #error "Must define rndr support directory."
 #endif
 
@@ -49,7 +49,7 @@ public:
    */
   void                initialize(int width = 640, int height = 480);
 
-  bool                addShaderSource(std::string path);
+  bool                addShaderSource(std::filesystem::path shader_path);
 
   wgpu::TextureFormat get_preferred_texture_format();
 

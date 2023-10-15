@@ -9,7 +9,19 @@
  *
  */
 
-#ifndef RNDR_RENDERABLE_H
-#define RNDR_RENDERABLE_H
+#ifndef RNDR_RENDERABLE_H_
+#define RNDR_RENDERABLE_H_
+
+#include <filesystem>
+#include <optional>
+
+namespace rndr {
+class RenderableObject {
+public:
+  static std::optional<RenderableObject> fromFile(std::filesystem::path path);
+
+private:
+};
+} // namespace rndr
 
 #endif

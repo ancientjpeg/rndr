@@ -1,6 +1,6 @@
-#include "rndr/application.h"
-#include "rndr/helpers.h"
-#include "rndr/ops.h"
+#include "application.h"
+#include "math/ops.h"
+#include "utils/helpers.h"
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_wgpu.h>
 #include <imgui.h>

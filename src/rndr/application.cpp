@@ -25,7 +25,7 @@ namespace rndr {
 using namespace wgpu;
 
 Application::Application()
-    : support_dir_(RTGPU_SUPPORT_DIR), shader_dir_(support_dir_ / "shaders")
+    : support_dir_(RNDR_SUPPORT_DIR), shader_dir_(support_dir_ / "shaders")
 {
   assert(support_dir_.is_absolute() && std::filesystem::exists(support_dir_));
   assert(shader_dir_.is_absolute() && std::filesystem::exists(shader_dir_));
@@ -56,7 +56,7 @@ void Application::initialize(int width, int height)
   glfwInitHint(GLFW_CLIENT_API, GLFW_NO_API);
   glfwInit();
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-  window_ = glfwCreateWindow(width_, height_, "RTGPU", nullptr, nullptr);
+  window_ = glfwCreateWindow(width_, height_, "RNDR", nullptr, nullptr);
 
   collectShaderSource_();
 
@@ -163,37 +163,37 @@ void Application::initialize(int width, int height)
   device_.SetUncapturedErrorCallback(helpers::default_error_callback, nullptr);
 }
 
-bool Application::addShaderSource(std::string path)
+bool Application::addShaderSource(std::filesystem::path shader_path)
 {
-  namespace fs = std::filesystem;
-  auto p       = fs::path(std::move(path));
-  if (!fs::exists(p) || p.extension() != ".wgsl") {
+  using namespace std::filesystem;
+
+  if (!exists(shader_path) || shader_path.extension() != ".wgsl") {
     return false;
   }
 
   std::stringstream out;
-  std::ifstream     ifs(p.string());
+  std::ifstream     ifs(shader_path);
   out << ifs.rdbuf();
 
-  auto name = p.string().substr(shader_dir_.string().size() + 1);
+  auto name = shader_path.string().substr(shader_dir_.string().size() + 1);
   if (shader_code_.count(name) != 0) {
     throw std::runtime_error("DUPLICATE SHADER");
     return false;
   }
-  shader_code_[name] = {name, p, out.str()};
+  shader_code_[name] = {name, shader_path, out.str()};
   return true;
 }
 
 void Application::collectShaderSource_(bool rescan)
 {
 
-  namespace fs = std::filesystem;
+  using namespace std::filesystem;
 
   if (rescan) {
     shader_code_.clear();
   };
 
-  for (auto const &dir_entry : fs::recursive_directory_iterator{shader_dir_}) {
+  for (auto const &dir_entry : recursive_directory_iterator{shader_dir_}) {
     auto p = dir_entry.path();
     addShaderSource(p);
   }
