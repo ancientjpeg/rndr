@@ -13,6 +13,7 @@
 #define RNDR_MATRIX_H_
 
 #include <array>
+#include <string>
 #include <tuple>
 
 namespace rndr {
@@ -49,9 +50,7 @@ public:
   }
 
   template <typename... Indices,
-            std::enable_if_t<(... && std::is_same_v<Indices, size_t>)&&(
-                                 sizeof...(Indices) == sizeof...(Dims)),
-                             bool>
+            std::enable_if_t<(sizeof...(Indices) == sizeof...(Dims)), bool>
             = true>
   T &at(Indices... indices)
   {
@@ -59,9 +58,7 @@ public:
     return data_[idx];
   }
 
-  template <typename... Indices,
-            std::enable_if_t<(... && std::is_same_v<Indices, size_t>), bool>
-            = true>
+  template <typename... Indices>
   size_t at_internal(size_t running_idx, size_t idx, Indices... indices)
   {
     /* Needs to be structured like this:
@@ -125,6 +122,26 @@ public:
     return ret;
   }
 
+  /* vector mult*/
+  template <size_t P>
+  basic_tensor<T, basic_tensor::dim<0>()> operator*(basic_tensor<T, P> rhs)
+    requires(sizeof...(Dims) == 2)
+  {
+    constexpr auto M = dim<0>();
+    static_assert(P == dim<1>());
+    basic_tensor<T, M> ret;
+    size_t             i = 0, j = 0;
+    size_t             m, n, p;
+    for (m = 0; m < M; ++m) {
+      T sum{};
+      for (p = 0; p < P; ++p) {
+        sum += at(m, p) * rhs.at(p);
+      }
+      ret.at(m) = sum;
+    }
+    return ret;
+  }
+
   friend bool operator==(const basic_tensor &mat0, const basic_tensor &mat1)
   {
     return std::memcmp(mat0.data_.data(), mat1.data_.data(),
@@ -148,8 +165,7 @@ public:
     return transpose_mat;
   }
 
-  template <size_t M = basic_tensor::dim<0>()>
-    requires(sizeof...(Dims) == 2)
+  template <size_t M>
   constexpr static basic_tensor<T, M, M> identity()
   {
     basic_tensor<T, M, M> ret;
