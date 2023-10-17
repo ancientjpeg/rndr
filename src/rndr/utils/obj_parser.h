@@ -9,7 +9,6 @@
  *
  */
 
-#define RNDR_OBJ_PARSER_H_
 #ifndef RNDR_OBJ_PARSER_H_
 #define RNDR_OBJ_PARSER_H_
 
@@ -24,20 +23,19 @@
 namespace rndr {
 
 struct MeshData {
-  std::vector<math::vector<3>>               vertices;
-  std::vector<math::basic_vector<size_t, 3>> faces;
+  std::vector<math::vec3>  vertices;
+  std::vector<math::svec3> faces;
 };
 
 static bool operator==(MeshData md0, MeshData md1)
 {
-  // return md0.vertices == md1.vertices && md0.faces == md1.faces;
-  return false;
+  return md0.vertices == md1.vertices && md0.faces == md1.faces;
 }
 
 static std::optional<MeshData> parseObjFile(std::filesystem::path obj_path)
 {
 
-  enum class RowType { Vertex, Face };
+  enum class RowType { Vertex, Face, Invalid };
   const std::map<char, RowType> row_type_map
       = {{{'v', RowType::Vertex}, {'f', RowType::Face}}};
 
@@ -49,13 +47,14 @@ static std::optional<MeshData> parseObjFile(std::filesystem::path obj_path)
 
   std::regex    word_matcher(R"([\w\./]+)");
   std::smatch   matches;
-  RowType       row_type;
 
   MeshData      ret;
 
   for (std::string line; std::getline(ifs, line);) {
 
-    math::vector<3>           vertex;
+    RowType                   row_type = RowType::Invalid;
+    math::vec3                vertex;
+    math::svec3               face;
     decltype(MeshData::faces) poly;
     for (size_t i = 0; std::regex_search(line, matches, word_matcher); ++i) {
       auto token = matches[0].str();
@@ -67,23 +66,37 @@ static std::optional<MeshData> parseObjFile(std::filesystem::path obj_path)
         /* This will throw if we hit a line where the first char */
         try {
           row_type = row_type_map.at(token.c_str()[0]);
-          continue;
         }
         catch (std::out_of_range &e) {
           /* unsupported dtype, continue. */
           break;
         }
       }
-
-      switch (row_type) {
-      case RowType::Vertex:
-        // vertex.at(i - 1) = 5;
-        break;
-      case RowType::Face:
-        break;
+      else {
+        switch (row_type) {
+        case RowType::Vertex:
+          vertex.at(i - 1) = std::stof(token);
+          break;
+        case RowType::Face:
+          face.at(i - 1) = std::stoul(token);
+          break;
+        case RowType::Invalid:
+          break;
+        }
       }
 
       line = matches.suffix();
+    }
+
+    switch (row_type) {
+    case RowType::Vertex:
+      ret.vertices.push_back(std::move(vertex));
+      break;
+    case RowType::Face:
+      ret.faces.push_back(std::move(face));
+      break;
+    case RowType::Invalid:
+      break;
     }
   }
 
