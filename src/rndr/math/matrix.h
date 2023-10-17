@@ -13,7 +13,6 @@
 #define RNDR_MATRIX_H_
 
 #include <array>
-#include <string>
 #include <tuple>
 
 namespace rndr {
@@ -100,10 +99,12 @@ public:
     return ret;
   }
 
-  template <size_t P, size_t N>
+  template <size_t P,
+            size_t N,
+            size_t DIMS_SIZE                       = sizeof...(Dims),
+            std::enable_if_t<DIMS_SIZE == 2, bool> = true>
   basic_tensor<T, basic_tensor::dim<0>(), N>
   operator*(basic_tensor<T, P, N> rhs)
-    requires(sizeof...(Dims) == 2)
   {
     constexpr auto M = dim<0>();
     static_assert(P == dim<1>());
@@ -123,9 +124,10 @@ public:
   }
 
   /* vector mult*/
-  template <size_t P>
+  template <size_t P,
+            size_t DIMS_SIZE                       = sizeof...(Dims),
+            std::enable_if_t<DIMS_SIZE == 2, bool> = true>
   basic_tensor<T, basic_tensor::dim<0>()> operator*(basic_tensor<T, P> rhs)
-    requires(sizeof...(Dims) == 2)
   {
     constexpr auto M = dim<0>();
     static_assert(P == dim<1>());
@@ -149,8 +151,9 @@ public:
            == 0;
   }
 
+  template <size_t DIMS_SIZE                       = sizeof...(Dims),
+            std::enable_if_t<DIMS_SIZE == 2, bool> = true>
   basic_tensor transpose()
-    requires(sizeof...(Dims) == 2)
   {
     decltype(transpose()) transpose_mat;
     constexpr size_t      M = basic_tensor::dim<0>();
@@ -179,11 +182,16 @@ private:
   std::array<T, size> data_;
 };
 
+/* DEFINITIONS */
+
 template <size_t... Dims>
 using tensor = basic_tensor<float, Dims...>;
 
 template <size_t... Dims>
 using dtensor = basic_tensor<double, Dims...>;
+
+template <size_t... Dims>
+using itensor = basic_tensor<int32_t, Dims...>;
 
 /* MATRIX DEFINITIONS */
 
@@ -207,7 +215,13 @@ using vec3   = vector<3>;
 using vec4   = vector<4>;
 
 template <size_t M>
-using ivector = basic_vector<size_t, M>;
+using ivector = basic_vector<int32_t, M>;
+using ivec2   = ivector<2>;
+using ivec3   = ivector<3>;
+using ivec4   = ivector<4>;
+
+template <size_t M>
+using svector = basic_vector<size_t, M>;
 
 template <size_t M>
 using dvector = dtensor<M>;
