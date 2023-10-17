@@ -13,89 +13,111 @@
 #define RNDR_MATRIX_H_
 
 #include <array>
-#include <cassert>
+#include <tuple>
 
 namespace rndr {
 namespace math {
 
-template <size_t M, size_t N, typename T = float>
-class mat {
+template <typename T, size_t... Dims>
+class basic_tensor {
 public:
   using type                   = T;
-  using transpose_t            = mat<N, M, T>;
+  static constexpr size_t size = (Dims * ...);
+  using array_t                = std::array<T, size>;
 
-  static constexpr size_t size = M * N;
+  static_assert(size * sizeof(T) < (1 << 12));
 
-  static_assert(size * sizeof(T) < 512);
-
-  mat()
+  basic_tensor()
   {
     std::fill(data_.begin(), data_.end(), T{});
   }
 
-  mat(std::initializer_list<T> init)
+  template <size_t Dim>
+  static constexpr size_t dim()
   {
-    assert(init.size() <= size);
-    std::copy(init.begin(), init.end(), data_.begin());
+    return std::get<Dim>(std::forward_as_tuple(Dims...));
   }
 
-  std::vector<T> to_vector() const
+  basic_tensor(array_t init)
   {
-    std::vector<T> ret(size);
+    data_ = init;
+  }
 
+  array_t get_data() const
+  {
+    return data_;
+  }
+
+  template <typename... Indices,
+            std::enable_if_t<(... && std::is_same_v<Indices, size_t>)&&(
+                                 sizeof...(Indices) == sizeof...(Dims)),
+                             bool>
+            = true>
+  T &at(Indices... indices)
+  {
+    size_t idx = at_internal(0, indices...);
+    return data_[idx];
+  }
+
+  template <typename... Indices,
+            std::enable_if_t<(... && std::is_same_v<Indices, size_t>), bool>
+            = true>
+  size_t at_internal(size_t running_idx, size_t idx, Indices... indices)
+  {
+    /* Needs to be structured like this:
+     * - m * M + n for M x N
+     * - m * M * N + n * N + p for  M x N x P
+     * - m * M * N * P + n * N * P + p * P + q for M x N x P x Q;
+     *
+     * So, we need to do a schema like this:
+     *
+     * layer 0: m * M  ....
+     * layer 1: ((m * M) + n) * N ...
+     * layer 2: ((((m * M) + n) * N) + p) * P ....
+     *
+     * ...right?
+     */
+
+    if constexpr (sizeof...(indices) > 0) {
+      constexpr size_t iteration   = sizeof...(Dims) - sizeof...(indices);
+      constexpr size_t current_dim = dim<iteration>();
+      const size_t     current_idx = (running_idx + idx) * current_dim;
+      return at_internal(current_idx, indices...);
+    }
+
+    return running_idx + idx;
+  }
+
+  constexpr size_t get_size()
+  {
+    return size;
+  }
+
+  friend basic_tensor operator+(const basic_tensor &lhs,
+                                const basic_tensor &rhs)
+  {
+    basic_tensor ret;
+    for (size_t i = 0; i < basic_tensor::size; ++i) {
+      ret.data_[i] = lhs.data_[i] + rhs.data_[i];
+    }
     return ret;
   }
 
-  transpose_t transpose() const
+  template <size_t P, size_t N>
+  basic_tensor<T, basic_tensor::dim<0>(), N>
+  operator*(basic_tensor<T, P, N> rhs)
+    requires(sizeof...(Dims) == 2)
   {
-    transpose_t transpose_mat;
-
-    size_t      m = 0, n = 0;
-    for (; m < M; ++m) {
-      for (; n < N; ++n) {
-        transpose_mat.at(n, m) = at(m, n);
-      }
-    }
-
-    return transpose_mat;
-  }
-
-  T &at(size_t m, size_t n)
-  {
-    assert(m < M && n < N);
-    return data_[m * N + n];
-  }
-
-  const T &at(size_t m, size_t n) const
-  {
-    assert(m < M && n < N);
-    return data_[m * N + n];
-  }
-
-  template <typename = std::enable_if_t<N == 1>>
-  T &at(size_t m)
-  {
-    assert(m < M);
-    return data_[m];
-  }
-
-  template <typename = std::enable_if_t<N == 1>>
-  const T &at(size_t m) const
-  {
-    assert(m < M);
-    return data_[m];
-  }
-
-  template <size_t P>
-  friend mat operator*(const mat<M, P, T> &lhs, const mat<P, N, T> &rhs)
-  {
-    mat    ret;
-    size_t m, n, p;
+    constexpr auto M = dim<0>();
+    static_assert(P == dim<1>());
+    basic_tensor<T, M, N> ret;
+    size_t                i = 0, j = 0;
+    size_t                m, n, p;
     for (m = 0; m < M; ++m) {
       for (n = 0; n < N; ++n) {
         T sum{};
         for (p = 0; p < P; ++p) {
-          sum += lhs.at(m, p) * rhs.at(p, n);
+          sum += at(m, p) * rhs.at(p, n);
         }
         ret.at(m, n) = sum;
       }
@@ -103,21 +125,76 @@ public:
     return ret;
   }
 
+  friend bool operator==(const basic_tensor &mat0, const basic_tensor &mat1)
+  {
+    return std::memcmp(mat0.data_.data(), mat1.data_.data(),
+                       sizeof(T) * mat0.size)
+           == 0;
+  }
+
+  basic_tensor transpose()
+    requires(sizeof...(Dims) == 2)
+  {
+    decltype(transpose()) transpose_mat;
+    constexpr size_t      M = basic_tensor::dim<0>();
+    constexpr size_t      N = basic_tensor::dim<1>();
+    size_t                m = 0, n = 0;
+    for (; m < dim<0>(); ++m) {
+      for (; n < dim<1>(); ++n) {
+        transpose_mat.at(n, m) = at(m, n);
+      }
+    }
+
+    return transpose_mat;
+  }
+
+  template <size_t M = basic_tensor::dim<0>()>
+    requires(sizeof...(Dims) == 2)
+  constexpr static basic_tensor<T, M, M> identity()
+  {
+    basic_tensor<T, M, M> ret;
+    for (size_t i = 0; i < M; ++i) {
+      ret.at(i, i) = T{1};
+    }
+    return ret;
+  }
+
 private:
   std::array<T, size> data_;
-  friend bool         operator==(mat<M, N, T> mat0, mat<M, N, T> mat1);
 };
 
-template <size_t M, size_t N, typename T = float>
-bool operator==(mat<M, N, T> mat0, mat<M, N, T> mat1)
-{
-  return mat0.size() == mat1.size()
-         && std::memcmp(mat0.data_.data(), mat1.data.data(),
-                        sizeof(T) * mat0.size());
-}
+template <size_t... Dims>
+using tensor = basic_tensor<float, Dims...>;
 
-template <size_t M, typename T = mat<M, 1>::type>
-using vec = mat<M, 1, T>;
+template <size_t... Dims>
+using dtensor = basic_tensor<double, Dims...>;
+
+/* MATRIX DEFINITIONS */
+
+template <typename T, size_t M, size_t N>
+using basic_matrix = basic_tensor<T, M, N>;
+
+template <size_t M, size_t N>
+using matrix = basic_matrix<float, M, N>;
+
+template <size_t M, size_t N>
+using dmatrix = basic_matrix<double, M, N>;
+
+/* VECTOR DEFINITIONS */
+template <typename T, size_t M>
+using basic_vector = basic_tensor<T, M>;
+
+template <size_t M>
+using vector = basic_vector<typename tensor<M>::type, M>;
+using vec2   = vector<2>;
+using vec3   = vector<3>;
+using vec4   = vector<4>;
+
+template <size_t M>
+using ivector = basic_vector<size_t, M>;
+
+template <size_t M>
+using dvector = dtensor<M>;
 
 } // namespace math
 } // namespace rndr

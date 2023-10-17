@@ -9,6 +9,7 @@
  *
  */
 
+#define RNDR_OBJ_PARSER_H_
 #ifndef RNDR_OBJ_PARSER_H_
 #define RNDR_OBJ_PARSER_H_
 
@@ -23,8 +24,8 @@
 namespace rndr {
 
 struct MeshData {
-  std::vector<math::vec<3>>         vertices;
-  std::vector<math::vec<3, size_t>> faces;
+  std::vector<math::vector<3>>               vertices;
+  std::vector<math::basic_vector<size_t, 3>> faces;
 };
 
 static bool operator==(MeshData md0, MeshData md1)
@@ -54,8 +55,8 @@ static std::optional<MeshData> parseObjFile(std::filesystem::path obj_path)
 
   for (std::string line; std::getline(ifs, line);) {
 
-    math::vec<3>         vertex;
-    math::vec<3, size_t> poly;
+    math::vector<3>           vertex;
+    decltype(MeshData::faces) poly;
     for (size_t i = 0; std::regex_search(line, matches, word_matcher); ++i) {
       auto token = matches[0].str();
 
@@ -76,7 +77,7 @@ static std::optional<MeshData> parseObjFile(std::filesystem::path obj_path)
 
       switch (row_type) {
       case RowType::Vertex:
-        vertex.at(i - 1) = 5;
+        // vertex.at(i - 1) = 5;
         break;
       case RowType::Face:
         break;
