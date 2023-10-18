@@ -1,5 +1,5 @@
-#include "math/matrix.h"
-#include "utils/obj_parser.h"
+#include "rndr/math/matrix.h"
+#include "rndr/utils/obj_parser.h"
 #include <catch2/catch_test_macros.hpp>
 #include <fstream>
 #include <string>

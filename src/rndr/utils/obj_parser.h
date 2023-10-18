@@ -12,7 +12,7 @@
 #ifndef RNDR_OBJ_PARSER_H_
 #define RNDR_OBJ_PARSER_H_
 
-#include "math/matrix.h"
+#include "rndr/math/matrix.h"
 #include <filesystem>
 #include <fstream>
 #include <map>

@@ -7,7 +7,12 @@ project(rndr
 set(CMAKE_CXX_STANDARD 20)
 
 
+set(RNDR_SUPPORT_DIR /usr/local/share/rndr)
 
 add_subdirectory(deps)
 add_subdirectory(src)
 add_subdirectory(tests)
+add_subdirectory(example)
+
+if(DEFINED RNDR_BUILD_EXAMPLES)
+endif()

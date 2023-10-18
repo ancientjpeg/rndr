@@ -57,10 +57,11 @@ private:
   void collectShaderSource_(bool rescan = false);
 
   /* Global WGPU objects */
-  wgpu::Instance instance_;
-  wgpu::Surface  surface_;
-  wgpu::Adapter  adapter_;
-  wgpu::Device   device_;
+  wgpu::Instance  instance_;
+  wgpu::Surface   surface_;
+  wgpu::Adapter   adapter_;
+  wgpu::Device    device_;
+  wgpu::SwapChain swap_chain_;
 
   /* Features and limits */
   std::vector<wgpu::FeatureName> required_features_ = {};
@@ -82,6 +83,8 @@ private:
 
   int                                 width_       = 0;
   int                                 height_      = 0;
+
+  std::mutex                          frame_lock;
 };
 
 } // namespace rndr

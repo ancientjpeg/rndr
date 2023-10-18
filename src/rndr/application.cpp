@@ -11,7 +11,7 @@
 
 #include "application.h"
 #include "glfw3webgpu.h"
-#include "utils/helpers.h"
+#include "rndr/utils/helpers.h"
 #include <cassert>
 #include <fstream>
 #include <future>
@@ -161,6 +161,17 @@ void Application::initialize(int width, int height)
   /* set default callbacks */
   device_.SetDeviceLostCallback(helpers::default_device_lost_callback, nullptr);
   device_.SetUncapturedErrorCallback(helpers::default_error_callback, nullptr);
+
+  /* get swap chain */
+  SwapChainDescriptor sc_desc = {};
+  sc_desc.width               = width_;
+  sc_desc.height              = height_;
+  sc_desc.format              = wgpu::TextureFormat::BGRA8Unorm;
+  sc_desc.usage               = wgpu::TextureUsage::RenderAttachment;
+  sc_desc.presentMode         = wgpu::PresentMode::Fifo;
+  sc_desc.label               = "Main SwapChain";
+
+  swap_chain_ = std::move(device_.CreateSwapChain(surface_, &sc_desc));
 }
 
 bool Application::addShaderSource(std::filesystem::path shader_path)

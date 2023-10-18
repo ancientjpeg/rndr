@@ -9,7 +9,7 @@
  *
  */
 
-#include "utils/helpers.h"
+#include "rndr/utils/helpers.h"
 
 #ifndef RNDR_OPS_H_
 #define RNDR_OPS_H_
