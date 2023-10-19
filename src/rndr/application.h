@@ -23,18 +23,18 @@
 
 namespace rndr {
 
-class GPU {
+class Application {
 public:
-  GPU();
-  ~GPU() = default;
+  Application();
+  ~Application() = default;
 
   /* non-copyable */
-  GPU(const GPU &)            = delete;
-  GPU &operator=(const GPU &) = delete;
+  Application(const Application &)            = delete;
+  Application &operator=(const Application &) = delete;
 
   /* non-movable */
-  GPU(GPU &&)            = delete;
-  GPU &operator=(GPU &&) = delete;
+  Application(Application &&)            = delete;
+  Application &operator=(Application &&) = delete;
 
   void setRequiredFeatures(std::vector<wgpu::FeatureName> required_features);
   void setRequiredLimits(wgpu::Limits required_limits);

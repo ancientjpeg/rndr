@@ -1,6 +1,6 @@
 add_library(librndr STATIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/gpu.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/gpu.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/application.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/application.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/renderable.h 
     ${CMAKE_CURRENT_SOURCE_DIR}/renderable.cpp
 )

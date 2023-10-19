@@ -1,4 +1,4 @@
-#include "rndr/gpu.h"
+#include "rndr/application.h"
 #include "rndr/math/ops.h"
 #include "rndr/utils/helpers.h"
 #include <backends/imgui_impl_glfw.h>
@@ -12,7 +12,7 @@ constexpr int        h = 480;
 
 int                  main()
 {
-  rndr::GPU program_gpu;
+  rndr::Application program_gpu;
   program_gpu.initialize();
 
   glfwInitHint(GLFW_CLIENT_API, GLFW_NO_API);
