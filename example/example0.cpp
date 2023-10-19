@@ -1,4 +1,4 @@
-#include "rndr/application.h"
+#include "rndr/gpu.h"
 #include "rndr/math/ops.h"
 #include "rndr/utils/helpers.h"
 #include <backends/imgui_impl_glfw.h>
@@ -12,10 +12,8 @@ constexpr int        h = 480;
 
 int                  main()
 {
-  rndr::Application app;
-  app.initialize();
-
-  return 0;
+  rndr::GPU program_gpu;
+  program_gpu.initialize();
 
   glfwInitHint(GLFW_CLIENT_API, GLFW_NO_API);
   glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
@@ -73,6 +71,7 @@ int                  main()
   wgpu::CommandBufferDescriptor buf_desc{};
   wgpu::CommandBuffer           temp_cbuf = enc.Finish(&buf_desc);
   queue.Submit(1, &temp_cbuf);
+  queue.OnSubmittedWorkDone(0, on_queue_finish, nullptr);
 
   /* buffer 2 map operation */
   struct Context {
@@ -150,6 +149,9 @@ int                  main()
     /* encode the command buffer, push to queue */
     wgpu::CommandBuffer command_buffer = encoder.Finish(&command_buffer_desc);
     queue.Submit(1, &command_buffer);
+
+    /* use onSubmittedWorkDone to hold the loop until the next frame. */
+    // queue.OnSubmittedWorkDone(0, on_queue_finish, nullptr);
 
     /* finally, present the next texture */
     swap_chain.Present();

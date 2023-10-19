@@ -9,9 +9,10 @@
  *
  */
 
-#include "application.h"
+#include "gpu.h"
 #include "glfw3webgpu.h"
 #include "rndr/utils/helpers.h"
+
 #include <cassert>
 #include <fstream>
 #include <future>
@@ -24,7 +25,7 @@ namespace rndr {
 
 using namespace wgpu;
 
-Application::Application()
+GPU::GPU()
     : support_dir_(RNDR_SUPPORT_DIR), shader_dir_(support_dir_ / "shaders")
 {
   assert(support_dir_.is_absolute() && std::filesystem::exists(support_dir_));
@@ -35,19 +36,18 @@ Application::Application()
 }
 
 /* PRE-INIT SETTERS */
-void Application::setRequiredFeatures(
-    std::vector<FeatureName> required_features)
+void GPU::setRequiredFeatures(std::vector<FeatureName> required_features)
 {
   required_features_ = std::move(required_features);
 }
 
-void Application::setRequiredLimits(Limits required_limits)
+void GPU::setRequiredLimits(Limits required_limits)
 {
   required_limits_.limits = std::move(required_limits);
 }
 
 /* INITIALIZE */
-void Application::initialize(int width, int height)
+void GPU::initialize(int width, int height)
 {
   width_  = width;
   height_ = height;
@@ -174,7 +174,7 @@ void Application::initialize(int width, int height)
   swap_chain_ = std::move(device_.CreateSwapChain(surface_, &sc_desc));
 }
 
-bool Application::addShaderSource(std::filesystem::path shader_path)
+bool GPU::addShaderSource(std::filesystem::path shader_path)
 {
   using namespace std::filesystem;
 
@@ -187,15 +187,11 @@ bool Application::addShaderSource(std::filesystem::path shader_path)
   out << ifs.rdbuf();
 
   auto name = shader_path.string().substr(shader_dir_.string().size() + 1);
-  if (shader_code_.count(name) != 0) {
-    throw std::runtime_error("DUPLICATE SHADER");
-    return false;
-  }
   shader_code_[name] = {name, shader_path, out.str()};
   return true;
 }
 
-void Application::collectShaderSource_(bool rescan)
+void GPU::collectShaderSource_(bool rescan)
 {
 
   using namespace std::filesystem;
