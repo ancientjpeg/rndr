@@ -21,7 +21,7 @@ namespace math {
 template <typename T, size_t... Dims>
 class basic_tensor {
 public:
-  using type                   = T;
+  using scalar_type            = T;
   static constexpr size_t size = (Dims * ...);
   using array_t                = std::array<T, size>;
 
@@ -199,7 +199,7 @@ template <typename T, size_t M, size_t N>
 using basic_matrix = basic_tensor<T, M, N>;
 
 template <size_t M, size_t N>
-using matrix = basic_matrix<float, M, N>;
+using matrix = basic_matrix<typename tensor<M>::scalar_type, M, N>;
 
 template <size_t M, size_t N>
 using dmatrix = basic_matrix<double, M, N>;
@@ -209,7 +209,7 @@ template <typename T, size_t M>
 using basic_vector = basic_tensor<T, M>;
 
 template <size_t M>
-using vector = basic_vector<typename tensor<M>::type, M>;
+using vector = basic_vector<typename tensor<M>::scalar_type, M>;
 using vec2   = vector<2>;
 using vec3   = vector<3>;
 using vec4   = vector<4>;
@@ -228,6 +228,22 @@ using svec4   = svector<4>;
 
 template <size_t M>
 using dvector = dtensor<M>;
+
+template <typename T>
+using basic_scalar = basic_tensor<T, 1>;
+using scalar       = basic_scalar<typename tensor<1>::scalar_type>;
+using dscalar      = basic_scalar<double>;
+using iscalar      = basic_scalar<int32_t>;
+using sscalar      = basic_scalar<size_t>;
+
+/* matrix type traits */
+/* https://stackoverflow.com/questions/16905359/how-to-check-if-a-type-is-a-specialization-of-the-stdarray-class-template
+ */
+template <typename>
+struct is_basic_tensor : std::false_type {};
+
+template <typename T, size_t... Dims>
+struct is_basic_tensor<basic_tensor<T, Dims...>> : std::true_type {};
 
 } // namespace math
 } // namespace rndr

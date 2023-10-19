@@ -16,6 +16,7 @@
 #include <GLFW/glfw3.h>
 #include <filesystem>
 #include <map>
+#include <rndr/data/uniform.h>
 
 #ifndef RNDR_SUPPORT_DIR
 #error "Must define rndr support directory."
