@@ -2,8 +2,10 @@ add_library(librndr STATIC
     ${CMAKE_CURRENT_SOURCE_DIR}/application.h
     ${CMAKE_CURRENT_SOURCE_DIR}/application.cpp
 )
-add_subdirectory(utils)
+
 add_subdirectory(math)
+add_subdirectory(resources)
+add_subdirectory(utils)
 
 
 target_include_directories(librndr PUBLIC ${PROJECT_SOURCE_DIR}/src)
