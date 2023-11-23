@@ -9,4 +9,8 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(Catch2)
 
 add_executable(tests test.cpp)
+
+add_subdirectory(loaders)
+add_subdirectory(math)
+
 target_link_libraries(tests PRIVATE Catch2::Catch2WithMain librndr)
