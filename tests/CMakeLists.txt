@@ -8,7 +8,7 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(Catch2)
 
-add_executable(tests test.cpp)
+add_executable(tests)
 
 add_subdirectory(loaders)
 add_subdirectory(math)
