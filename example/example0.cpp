@@ -1,5 +1,5 @@
-#include "rndr/application.h"
 #include "rndr/math/ops.h"
+#include "rndr/resource_manager.h"
 #include "rndr/utils/helpers.h"
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_wgpu.h>
@@ -12,7 +12,7 @@ constexpr int        h = 480;
 
 int                  main()
 {
-  rndr::Application program_gpu;
+  rndr::ResourceManager program_gpu;
   program_gpu.initialize();
 
   glfwInitHint(GLFW_CLIENT_API, GLFW_NO_API);

@@ -1,5 +1,5 @@
 /**
- * @file application.h
+ * @file resource_manager.h
  * @author Jackson Wyatt Kaplan (JwyattK@gmail.com)
  * @brief
  * @version 0.1
@@ -16,7 +16,6 @@
 #include <GLFW/glfw3.h>
 #include <filesystem>
 #include <map>
-#include <rndr/resources/uniform.h>
 
 #ifndef RNDR_SUPPORT_DIR
 #error "Must define rndr support directory."
@@ -24,20 +23,27 @@
 
 namespace rndr {
 
-class Application {
+class ResourceManager {
 public:
-  Application();
-  ~Application() = default;
+  ResourceManager();
+  ~ResourceManager() = default;
 
   /* non-copyable */
-  Application(const Application &)            = delete;
-  Application &operator=(const Application &) = delete;
+  ResourceManager(const ResourceManager &)            = delete;
+  ResourceManager &operator=(const ResourceManager &) = delete;
 
   /* non-movable */
-  Application(Application &&)            = delete;
-  Application &operator=(Application &&) = delete;
+  ResourceManager(ResourceManager &&)            = delete;
+  ResourceManager &operator=(ResourceManager &&) = delete;
 
+  /**
+   * @brief Set the required features. Call this before a call to `initialize`.
+   */
   void setRequiredFeatures(std::vector<wgpu::FeatureName> required_features);
+
+  /**
+   * @brief Set the required limits. Call this before a call to `initialize`.
+   */
   void setRequiredLimits(wgpu::Limits required_limits);
 
   /**
@@ -58,11 +64,13 @@ private:
   void collectShaderSource_(bool rescan = false);
 
   /* Global WGPU objects */
-  wgpu::Instance  instance_;
-  wgpu::Surface   surface_;
-  wgpu::Adapter   adapter_;
-  wgpu::Device    device_;
-  wgpu::SwapChain swap_chain_;
+  wgpu::Instance       instance_;
+  wgpu::Surface        surface_;
+  wgpu::Adapter        adapter_;
+  wgpu::Device         device_;
+  wgpu::RenderPipeline pipeline_;
+
+  wgpu::SwapChain      swap_chain_;
 
   /* Features and limits */
   std::vector<wgpu::FeatureName> required_features_ = {};
