@@ -13,6 +13,8 @@
 #define RNDR_OBJ_PARSER_H_
 
 #include "rndr/math/matrix.h"
+#include "rndr/types/types.h"
+
 #include <filesystem>
 #include <fstream>
 #include <map>
@@ -21,16 +23,6 @@
 #include <vector>
 
 namespace rndr {
-
-struct MeshData {
-  std::vector<math::vec3>  vertices;
-  std::vector<math::zvec3> faces;
-};
-
-static bool operator==(MeshData md0, MeshData md1)
-{
-  return md0.vertices == md1.vertices && md0.faces == md1.faces;
-}
 
 static std::optional<MeshData> parseObjFile(std::filesystem::path obj_path)
 {

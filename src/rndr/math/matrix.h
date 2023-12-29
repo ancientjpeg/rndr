@@ -236,23 +236,6 @@ using dscalar      = basic_scalar<double>;
 using iscalar      = basic_scalar<int32_t>;
 using sscalar      = basic_scalar<size_t>;
 
-/* matrix type traits */
-/* https://stackoverflow.com/questions/16905359/how-to-check-if-a-type-is-a-specialization-of-the-stdarray-class-template
- */
-template <typename>
-struct is_basic_tensor : std::false_type {};
-
-template <typename T, size_t... Dims>
-struct is_basic_tensor<basic_tensor<T, Dims...>> : std::true_type {};
-
-template <typename T>
-static constexpr bool is_basic_tensor_v = is_basic_tensor<T>::value;
-
-static_assert(is_basic_tensor_v<zvec4>);
-static_assert(is_basic_tensor_v<basic_scalar<unsigned short>>);
-static_assert(is_basic_tensor_v<vec2>);
-static_assert(!is_basic_tensor_v<std::vector<float>>);
-
 } // namespace math
 } // namespace rndr
 

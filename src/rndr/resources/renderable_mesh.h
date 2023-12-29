@@ -13,6 +13,7 @@
 #define RNDR_MESH_H_
 
 #include "rndr/math/matrix.h"
+#include "rndr/types/types.h"
 
 #include <vector>
 #include <webgpu/webgpu_cpp.h>
@@ -21,19 +22,7 @@ namespace rndr {
 
 class RenderableMesh {
 public:
-  wgpu::RenderPassDescriptor getRenderPassDescriptor(
-      const wgpu::RenderPassColorAttachment        &color_attachment,
-      const wgpu::RenderPassDepthStencilAttachment &depth_stencil_attachment)
-  {
-    wgpu::RenderPassDescriptor descriptor;
-
-    descriptor.colorAttachments       = &color_attachment;
-    descriptor.colorAttachmentCount   = 1;
-
-    descriptor.depthStencilAttachment = &depth_stencil_attachment;
-
-    return descriptor;
-  };
+  RenderableMesh(MeshData &inMeshData);
 
 private:
   std::vector<math::vec3> vertices_;
