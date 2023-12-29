@@ -1,6 +1,6 @@
 add_library(librndr STATIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/application.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/application.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/resource_manager.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/resource_manager.cpp
 )
 
 add_subdirectory(math)
