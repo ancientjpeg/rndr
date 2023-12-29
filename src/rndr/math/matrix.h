@@ -221,10 +221,10 @@ using ivec3   = ivector<3>;
 using ivec4   = ivector<4>;
 
 template <size_t M>
-using svector = basic_vector<size_t, M>;
-using svec2   = svector<2>;
-using svec3   = svector<3>;
-using svec4   = svector<4>;
+using zvector = basic_vector<size_t, M>;
+using zvec2   = zvector<2>;
+using zvec3   = zvector<3>;
+using zvec4   = zvector<4>;
 
 template <size_t M>
 using dvector = dtensor<M>;

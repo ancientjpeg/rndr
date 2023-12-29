@@ -24,7 +24,7 @@ namespace rndr {
 
 struct MeshData {
   std::vector<math::vec3>  vertices;
-  std::vector<math::svec3> faces;
+  std::vector<math::zvec3> faces;
 };
 
 static bool operator==(MeshData md0, MeshData md1)
@@ -54,7 +54,7 @@ static std::optional<MeshData> parseObjFile(std::filesystem::path obj_path)
 
     RowType                   row_type = RowType::Invalid;
     math::vec3                vertex;
-    math::svec3               face;
+    math::zvec3               face;
     decltype(MeshData::faces) poly;
     for (size_t i = 0; std::regex_search(line, matches, word_matcher); ++i) {
       auto token = matches[0].str();

@@ -13,8 +13,8 @@ TEST_CASE("test OBJ parser")
   rndr::MeshData md
       = {{math::vector<3>({1, 0, 1}), math::vector<3>({0, 0, 1}),
           math::vector<3>({1, 1, 1}), math::vector<3>({1, 1, 0})},
-         {math::svector<3>({1, 2, 3}), math::svector<3>({1, 2, 4}),
-          math::svector<3>({2, 3, 4}), math::svector<3>({1, 3, 4})}};
+         {math::zvector<3>({1, 2, 3}), math::zvector<3>({1, 2, 4}),
+          math::zvector<3>({2, 3, 4}), math::zvector<3>({1, 3, 4})}};
 
   std::string   test_obj = R"(
   v 1.0 0.0 1.0
