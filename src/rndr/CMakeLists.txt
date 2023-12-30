@@ -3,8 +3,10 @@ add_library(librndr STATIC
     ${CMAKE_CURRENT_SOURCE_DIR}/application.cpp
 )
 
+add_subdirectory(materials)
 add_subdirectory(math)
 add_subdirectory(resources)
+add_subdirectory(types)
 add_subdirectory(utils)
 
 

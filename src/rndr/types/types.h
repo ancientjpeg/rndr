@@ -66,6 +66,9 @@ static_assert(!is_basic_tensor_v<std::vector<float>>);
 
 } // namespace math
 
+template <typename T>
+using unique_vector = std::vector<std::unique_ptr<T>>;
+
 } // namespace rndr
 
 #endif

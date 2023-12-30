@@ -10,8 +10,9 @@
  */
 
 #include "helpers.h"
-#include "glfw3webgpu.h"
+#include "rndr/types/types.h"
 
+#include "glfw3webgpu.h"
 #include <iostream>
 #include <vector>
 
@@ -382,6 +383,32 @@ bool limits_supported(wgpu::Limits required_limits,
                         required_limits.maxComputeWorkgroupsPerDimension,
                         def.maxComputeWorkgroupsPerDimension);
   return temp;
+}
+
+wgpu::ShaderModule createShaderModule(wgpu::Device            &device,
+                                      std::vector<std::string> shader_sources,
+                                      const char              *label)
+{
+
+  if (shader_sources.empty()) {
+    throw std::runtime_error("Cannot create a shader module with no sources!");
+  }
+
+  std::vector<wgpu::ShaderModuleWGSLDescriptor> code_descriptors(
+      shader_sources.size());
+
+  for (size_t i = 0; i < shader_sources.size(); ++i) {
+    code_descriptors[i].code        = shader_sources[i].c_str();
+    code_descriptors[i].nextInChain = (i < (shader_sources.size() - 1))
+                                          ? code_descriptors.data() + (i + 1)
+                                          : nullptr;
+  }
+
+  wgpu::ShaderModuleDescriptor desc;
+  desc.nextInChain = code_descriptors.data();
+  desc.label       = label;
+
+  return device.CreateShaderModule(&desc);
 }
 
 } // namespace helpers

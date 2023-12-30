@@ -11,6 +11,7 @@
 
 #include "webgpu/webgpu_cpp.h"
 #include <GLFW/glfw3.h>
+#include <memory>
 
 #ifndef WGPU_HELPERS_H
 #define WGPU_HELPERS_H
@@ -30,16 +31,20 @@ wgpu::RenderPipeline createRenderPipeline(_Globals globals);
 
 namespace helpers {
 
-void default_device_lost_callback(WGPUDeviceLostReason reason,
-                                  char const          *message,
-                                  void                *userdata);
+void               default_device_lost_callback(WGPUDeviceLostReason reason,
+                                                char const          *message,
+                                                void                *userdata);
 
-void default_error_callback(WGPUErrorType type,
-                            char const   *message,
-                            void         *userdata);
+void               default_error_callback(WGPUErrorType type,
+                                          char const   *message,
+                                          void         *userdata);
 
-bool limits_supported(wgpu::Limits required_limits,
-                      wgpu::Limits supported_limits);
+bool               limits_supported(wgpu::Limits required_limits,
+                                    wgpu::Limits supported_limits);
+
+wgpu::ShaderModule createShaderModule(wgpu::Device            &device,
+                                      std::vector<std::string> shader_sources,
+                                      const char              *label = nullptr);
 
 } // namespace helpers
 

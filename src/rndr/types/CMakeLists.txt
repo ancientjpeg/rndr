@@ -1,3 +1,4 @@
 target_sources(librndr PUBLIC
-  renderable_mesh.h
+  globals.h
+  types.h
 )

@@ -12,7 +12,6 @@
 #ifndef RNDR_MATERIAL_H_
 #define RNDR_MATERIAL_H_
 
-#include "renderable_mesh.h"
 #include "rndr/types/globals.h"
 
 namespace rndr {
@@ -25,9 +24,11 @@ class Material : public GlobalAccess {
   Material &operator=(const Material &) = delete;
 
   Material(Material &&)                 = delete;
-  Material &operator=(Material &&)      = delete;
+  Material    &operator=(Material &&)   = delete;
 
-  void      draw();
+  void         setShaderSource();
+
+  virtual void draw() = 0;
 
 protected:
   wgpu::RenderPipelineDescriptor desc_;
