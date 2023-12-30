@@ -1,5 +1,5 @@
 /**
- * @file resource_manager.h
+ * @file application.h
  * @author Jackson Wyatt Kaplan (JwyattK@gmail.com)
  * @brief
  * @version 0.1
@@ -12,6 +12,8 @@
 #ifndef RNDR_APPLICATION_H_
 #define RNDR_APPLICATION_H_
 
+#include "rndr/types/globals.h"
+
 #include "webgpu/webgpu_cpp.h"
 #include <GLFW/glfw3.h>
 #include <filesystem>
@@ -23,18 +25,18 @@
 
 namespace rndr {
 
-class ResourceManager {
+class Application : public Globals {
 public:
-  ResourceManager();
-  ~ResourceManager() = default;
+  Application();
+  ~Application() = default;
 
   /* non-copyable */
-  ResourceManager(const ResourceManager &)            = delete;
-  ResourceManager &operator=(const ResourceManager &) = delete;
+  Application(const Application &)            = delete;
+  Application &operator=(const Application &) = delete;
 
   /* non-movable */
-  ResourceManager(ResourceManager &&)            = delete;
-  ResourceManager &operator=(ResourceManager &&) = delete;
+  Application(Application &&)            = delete;
+  Application &operator=(Application &&) = delete;
 
   /**
    * @brief Set the required features. Call this before a call to `initialize`.
@@ -64,13 +66,9 @@ private:
   void collectShaderSource_(bool rescan = false);
 
   /* Global WGPU objects */
-  wgpu::Instance       instance_;
-  wgpu::Surface        surface_;
-  wgpu::Adapter        adapter_;
-  wgpu::Device         device_;
-  wgpu::RenderPipeline pipeline_;
+  wgpu::Surface   surface_;
 
-  wgpu::SwapChain      swap_chain_;
+  wgpu::SwapChain swap_chain_;
 
   /* Features and limits */
   std::vector<wgpu::FeatureName> required_features_ = {};

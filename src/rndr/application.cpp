@@ -1,5 +1,5 @@
 /**
- * @file resource_manager.cpp
+ * @file application.cpp
  * @author Jackson Wyatt Kaplan (JwyattK@gmail.com)
  * @brief
  * @version 0.1
@@ -9,7 +9,7 @@
  *
  */
 
-#include "resource_manager.h"
+#include "application.h"
 #include "glfw3webgpu.h"
 #include "rndr/utils/helpers.h"
 
@@ -25,7 +25,7 @@ namespace rndr {
 
 using namespace wgpu;
 
-ResourceManager::ResourceManager()
+Application::Application()
     : support_dir_(RNDR_SUPPORT_DIR), shader_dir_(support_dir_ / "shaders")
 {
   assert(support_dir_.is_absolute() && std::filesystem::exists(support_dir_));
@@ -36,19 +36,19 @@ ResourceManager::ResourceManager()
 }
 
 /* PRE-INIT SETTERS */
-void ResourceManager::setRequiredFeatures(
+void Application::setRequiredFeatures(
     std::vector<FeatureName> required_features)
 {
   required_features_ = std::move(required_features);
 }
 
-void ResourceManager::setRequiredLimits(Limits required_limits)
+void Application::setRequiredLimits(Limits required_limits)
 {
   required_limits_.limits = std::move(required_limits);
 }
 
 /* INITIALIZE */
-void ResourceManager::initialize(int width, int height)
+void Application::initialize(int width, int height)
 {
   width_  = width;
   height_ = height;
@@ -63,7 +63,7 @@ void ResourceManager::initialize(int width, int height)
 
   /* Instance + surface init */
   InstanceDescriptor instance_desc = {};
-  instance_                        = CreateInstance();
+  wgpu::Instance     instance_     = CreateInstance();
 
   surface_ = Surface::Acquire(glfwGetWGPUSurface(instance_.Get(), window_));
 
@@ -91,9 +91,11 @@ void ResourceManager::initialize(int width, int height)
   instance_.RequestAdapter(&adapter_opts, adapter_req_callback,
                            &adapter_req_promise);
 
+  wgpu::Adapter adapter;
+
   try {
-    adapter_ = Adapter::Acquire(adapter_req_future.get());
-    std::cout << "Successfully acquired adapter at address:" << adapter_.Get()
+    adapter = Adapter::Acquire(adapter_req_future.get());
+    std::cout << "Successfully acquired adapter at address:" << adapter.Get()
               << std::endl;
   }
   catch (std::exception &e) {
@@ -102,17 +104,16 @@ void ResourceManager::initialize(int width, int height)
     throw e;
   }
 
-  /* Check features */
-  std::vector<FeatureName> available_features(
-      adapter_.EnumerateFeatures(nullptr));
-  adapter_.EnumerateFeatures(available_features.data());
+  /* Get features */
+  features_.resize(adapter.EnumerateFeatures(nullptr));
+  adapter.EnumerateFeatures(features_.data());
 
-  std::sort(available_features.begin(), available_features.end());
+  std::sort(features_.begin(), features_.end());
   std::sort(required_features_.begin(), required_features_.end());
 
   for (FeatureName feature : required_features_) {
-    if (std::find(available_features.begin(), available_features.end(), feature)
-        == available_features.end()) {
+    if (std::find(features_.begin(), features_.end(), feature)
+        == features_.end()) {
       throw std::runtime_error("Feature with code"s
                                + std::to_string((int)feature) + "unavailable"s);
     }
@@ -120,7 +121,7 @@ void ResourceManager::initialize(int width, int height)
 
   /* Test limits */
   SupportedLimits supported_limits = {};
-  adapter_.GetLimits(&supported_limits);
+  adapter.GetLimits(&supported_limits);
 
   if (!helpers::limits_supported(supported_limits.limits,
                                  required_limits_.limits)) {
@@ -129,15 +130,15 @@ void ResourceManager::initialize(int width, int height)
 
   /* Request device */
   DeviceDescriptor device_desc      = {};
-  device_desc.requiredFeatures      = available_features.data();
-  device_desc.requiredFeaturesCount = available_features.size();
+  device_desc.requiredFeatures      = features_.data();
+  device_desc.requiredFeaturesCount = features_.size();
   device_desc.requiredLimits        = &required_limits_;
   device_desc.label                 = "rndr Application Device";
 
   std::promise<WGPUDevice> device_req_promise;
   std::future<WGPUDevice>  device_req_future = device_req_promise.get_future();
 
-  adapter_.RequestDevice(
+  adapter.RequestDevice(
       &device_desc,
       [](WGPURequestDeviceStatus status, WGPUDevice device, char const *message,
          void *userdata) {
@@ -175,7 +176,7 @@ void ResourceManager::initialize(int width, int height)
   swap_chain_ = std::move(device_.CreateSwapChain(surface_, &sc_desc));
 }
 
-bool ResourceManager::addShaderSource(std::filesystem::path shader_path)
+bool Application::addShaderSource(std::filesystem::path shader_path)
 {
   using namespace std::filesystem;
 
@@ -192,7 +193,7 @@ bool ResourceManager::addShaderSource(std::filesystem::path shader_path)
   return true;
 }
 
-void ResourceManager::collectShaderSource_(bool rescan)
+void Application::collectShaderSource_(bool rescan)
 {
 
   using namespace std::filesystem;

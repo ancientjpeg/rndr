@@ -109,10 +109,10 @@ wgpu::Device requestWGPUDevice(wgpu::Adapter adapter)
   return udata.device;
 }
 
-Globals requestGlobals(GLFWwindow *window)
+_Globals requestGlobals(GLFWwindow *window)
 {
 
-  Globals globals;
+  _Globals globals;
 
   /* get instance */
   wgpu::InstanceDescriptor instance_desc = {};
@@ -131,7 +131,7 @@ Globals requestGlobals(GLFWwindow *window)
   return globals;
 }
 
-wgpu::RenderPipeline createRenderPipeline(Globals globals)
+wgpu::RenderPipeline createRenderPipeline(_Globals globals)
 {
 
   const char *shaderSource = R"(

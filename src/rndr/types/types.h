@@ -16,6 +16,7 @@
 
 #include <type_traits>
 #include <vector>
+#include <webgpu/webgpu_cpp.h>
 
 namespace rndr {
 
@@ -35,8 +36,10 @@ template <typename T, typename = void>
 struct is_rndr_resource : std::false_type {};
 
 template <typename T>
-struct is_rndr_resource<T, std::void_t<decltype(std::declval<T>().what())>>
-    : std::true_type {};
+struct is_rndr_resource<
+    T,
+    std::void_t<decltype(std::declval<T>().registerWithPipeline(
+        std::declval<wgpu::RenderPipeline &>()))>> : std::true_type {};
 
 template <typename T>
 static constexpr bool is_rndr_resource_v = is_rndr_resource<T>::value;

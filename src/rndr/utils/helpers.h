@@ -17,16 +17,16 @@
 
 namespace rndr {
 
-struct Globals {
+struct _Globals {
   wgpu::Instance instance;
   wgpu::Adapter  adapter;
   wgpu::Device   device;
   wgpu::Surface  surface;
 };
 
-Globals              requestGlobals(GLFWwindow *window);
+_Globals             requestGlobals(GLFWwindow *window);
 
-wgpu::RenderPipeline createRenderPipeline(Globals globals);
+wgpu::RenderPipeline createRenderPipeline(_Globals globals);
 
 namespace helpers {
 

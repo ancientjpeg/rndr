@@ -1,18 +1,18 @@
+#include "rndr/application.h"
 #include "rndr/math/ops.h"
-#include "rndr/resource_manager.h"
 #include "rndr/utils/helpers.h"
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_wgpu.h>
 #include <imgui.h>
 #include <iostream>
 
-static rndr::Globals globals;
-constexpr int        w = 640;
-constexpr int        h = 480;
+static rndr::_Globals globals;
+constexpr int         w = 640;
+constexpr int         h = 480;
 
-int                  main()
+int                   main()
 {
-  rndr::ResourceManager program_gpu;
+  rndr::Application program_gpu;
   program_gpu.initialize();
 
   glfwInitHint(GLFW_CLIENT_API, GLFW_NO_API);
