@@ -24,15 +24,42 @@ class Material : public GlobalAccess {
   Material &operator=(const Material &) = delete;
 
   Material(Material &&)                 = delete;
-  Material    &operator=(Material &&)   = delete;
+  Material &operator=(Material &&)      = delete;
 
-  void         setShaderSource();
+  /**
+   * @brief Set the WGSL shader sources for this material.
+   *
+   * @note Default entry points to vertex and fragment stages are
+   * `rndr_vert_main` and `rndr_frag_main`, respectively.
+   *
+   * @todo Implement custom entry points.
+   */
+  void setShaderSource(std::vector<std::string> shader_sources);
+
+  /**
+   * @brief Creates this material's render pipeline, rendering it ready
+   * for usage in draw calls.
+   *
+   */
+  void         finalize();
+
+  bool         isFinalized();
 
   virtual void draw() = 0;
 
 protected:
-  wgpu::RenderPipelineDescriptor desc_;
-  wgpu::RenderPipeline           pipeline_;
+  wgpu::RenderPipeline           pipeline_           = nullptr;
+  wgpu::ShaderModule             shader_module_      = nullptr;
+
+  wgpu::RenderPipelineDescriptor desc_               = {};
+  wgpu::VertexState              vertex_state_       = {};
+  wgpu::BlendState               blend_state_        = {};
+  wgpu::ColorTargetState         color_target_state_ = {};
+  wgpu::FragmentState            fragment_state_     = {};
+
+  bool                           finalized_          = false;
+
+  std::string                    label_              = "rndr Material";
 };
 
 } // namespace rndr
