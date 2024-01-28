@@ -32,12 +32,6 @@ public:
     std::fill(data_.begin(), data_.end(), T{});
   }
 
-  template <size_t Dim>
-  static constexpr size_t dim()
-  {
-    return std::get<Dim>(std::forward_as_tuple(Dims...));
-  }
-
   basic_tensor(array_t init)
   {
     data_ = init;
@@ -46,6 +40,12 @@ public:
   array_t get_data() const
   {
     return data_;
+  }
+
+  template <size_t Dim>
+  static constexpr size_t dim()
+  {
+    return std::get<Dim>(std::forward_as_tuple(Dims...));
   }
 
   template <typename... Indices,
@@ -57,6 +57,7 @@ public:
     return data_[idx];
   }
 
+  /** @todo i think this is dumb, `at()` should be simpler. */
   template <typename... Indices>
   size_t at_internal(size_t running_idx, size_t idx, Indices... indices)
   {
