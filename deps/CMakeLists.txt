@@ -6,6 +6,8 @@ if ("${WEBGPU_BACKEND}" STREQUAL "DAWN")
 # why does dawn just shove glfw directly into my anus like this
 set(DAWN_BUILD_SAMPLES OFF)
 set(DAWN_USE_GLFW OFF)
+set(TINT_BUILD_CMD_TOOLS OFF)
+set(TINT_BUILD_TESTS OFF)
 
 else()
 
