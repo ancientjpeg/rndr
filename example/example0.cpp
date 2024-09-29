@@ -35,7 +35,7 @@ int                   main()
   };
 
   wgpu::Queue queue = globals.device.GetQueue();
-  queue.OnSubmittedWorkDone(0, on_queue_finish, nullptr);
+  queue.OnSubmittedWorkDone(on_queue_finish, nullptr);
   wgpu::SwapChainDescriptor swap_chain_desc = {};
   swap_chain_desc.nextInChain               = nullptr;
   swap_chain_desc.width                     = w;
@@ -71,7 +71,7 @@ int                   main()
   wgpu::CommandBufferDescriptor buf_desc{};
   wgpu::CommandBuffer           temp_cbuf = enc.Finish(&buf_desc);
   queue.Submit(1, &temp_cbuf);
-  queue.OnSubmittedWorkDone(0, on_queue_finish, nullptr);
+  queue.OnSubmittedWorkDone(on_queue_finish, nullptr);
 
   /* buffer 2 map operation */
   struct Context {
@@ -127,7 +127,6 @@ int                   main()
     pass_desc.label                      = "Default Render Pass Encoder";
     pass_desc.colorAttachmentCount       = 1;
     pass_desc.colorAttachments           = &color_attachment;
-    pass_desc.timestampWriteCount        = 0;
     pass_desc.timestampWrites            = nullptr;
     pass_desc.depthStencilAttachment     = nullptr;
 

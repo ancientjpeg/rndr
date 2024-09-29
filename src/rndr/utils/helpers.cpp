@@ -81,8 +81,7 @@ wgpu::Device requestWGPUDevice(wgpu::Adapter adapter)
   /* describe the device */
   wgpu::DeviceDescriptor descriptor = {};
   descriptor.requiredFeatures       = nullptr;
-  descriptor.requiredFeaturesCount  = 0;
-  descriptor.requiredFeaturesCount  = 0;
+  descriptor.requiredFeatureCount   = 0;
   descriptor.requiredLimits         = nullptr;
   descriptor.label                  = "WGPU Default Device";
   descriptor.defaultQueue.label     = "WGPU Default Queue";

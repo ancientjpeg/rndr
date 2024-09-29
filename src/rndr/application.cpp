@@ -129,11 +129,11 @@ void Application::initialize(int width, int height)
   }
 
   /* Request device */
-  DeviceDescriptor device_desc      = {};
-  device_desc.requiredFeatures      = features_.data();
-  device_desc.requiredFeaturesCount = features_.size();
-  device_desc.requiredLimits        = &required_limits_;
-  device_desc.label                 = "rndr Application Device";
+  DeviceDescriptor device_desc     = {};
+  device_desc.requiredFeatures     = features_.data();
+  device_desc.requiredFeatureCount = features_.size();
+  device_desc.requiredLimits       = &required_limits_;
+  device_desc.label                = "rndr Application Device";
 
   std::promise<WGPUDevice> device_req_promise;
   std::future<WGPUDevice>  device_req_future = device_req_promise.get_future();
