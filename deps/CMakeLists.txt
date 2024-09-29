@@ -17,7 +17,8 @@ endif()
 FetchContent_Declare(
   webgpu
   GIT_REPOSITORY https://github.com/eliemichel/WebGPU-distribution
-  GIT_TAG        main # see repo README to see how to use different branches
+  GIT_TAG        fb39c1fcbd3c48da8e87fe614194a217a6e04fae
+  # GIT_TAG        main # see repo README to see how to use different branches
 )
 FetchContent_MakeAvailable(webgpu)
 
@@ -25,7 +26,8 @@ FetchContent_MakeAvailable(webgpu)
 FetchContent_Declare(
     glfw3webgpu
     GIT_REPOSITORY https://github.com/eliemichel/glfw3webgpu
-    GIT_TAG main
+    GIT_TAG 39a80205998c6cbf803e18e750d964c23a47ef39
+    # GIT_TAG main
 )
 FetchContent_MakeAvailable(glfw3webgpu)
 
@@ -33,6 +35,7 @@ FetchContent_MakeAvailable(glfw3webgpu)
 FetchContent_Declare(
         glfw
         GIT_REPOSITORY https://github.com/glfw/glfw
+        GIT_TAG 2b3f919b6055e6837ca0fad193c7f96b323f1256
 )
 
 FetchContent_GetProperties(glfw)
