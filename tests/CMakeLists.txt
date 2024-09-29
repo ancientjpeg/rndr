@@ -13,4 +13,4 @@ add_executable(tests)
 add_subdirectory(loaders)
 add_subdirectory(math)
 
-target_link_libraries(tests PRIVATE Catch2::Catch2WithMain librndr)
+target_link_libraries(tests PRIVATE Catch2::Catch2WithMain rndr)
