@@ -6,5 +6,6 @@ TEST_CASE("Application initializes and destructs without fault")
 {
   auto app = std::make_unique<rndr::Application>();
   app->initialize();
+  CHECK(app->isInitialized());
   app = nullptr;
 }

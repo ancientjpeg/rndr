@@ -14,6 +14,7 @@
 #include "glfw3webgpu.h"
 #include "globals.h"
 
+#include <cassert>
 #include <future>
 #include <iostream>
 
@@ -24,6 +25,11 @@ Globals::~Globals()
 {
   glfwDestroyWindow(getWindow());
   glfwTerminate();
+
+  assert(device_.GetAdapter().MoveToCHandle() != nullptr);
+  wgpuDeviceRelease(device_.MoveToCHandle());
+  std::this_thread::sleep_for(std::chrono::seconds(1));
+  /* wgpuInstanceRelease(instance_.MoveToCHandle()); */
 }
 
 /* PRE-INIT SETTERS */
@@ -37,23 +43,11 @@ void Globals::setRequiredLimits(Limits required_limits)
   required_limits_.limits = std::move(required_limits);
 }
 
-void Globals::initialize(int width, int height)
+void Globals::initializeWebGPU()
 {
-
-  width_  = width;
-  height_ = height;
-
-  /* GLFW init */
-  glfwInitHint(GLFW_CLIENT_API, GLFW_NO_API);
-  glfwInit();
-  glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-  window_ = glfwCreateWindow(width_, height_, "RNDR", nullptr, nullptr);
-
   /* Instance + surface init */
   InstanceDescriptor instance_desc = {};
   instance_                        = CreateInstance();
-
-  surface_ = Surface::Acquire(glfwGetWGPUSurface(instance_.Get(), window_));
 
   /* Request adapter */
   RequestAdapterOptions adapter_opts = {};
@@ -123,6 +117,12 @@ void Globals::initialize(int width, int height)
   device_desc.requiredLimits       = &required_limits_;
   device_desc.label                = "rndr Application Device";
 
+  wgpu::DeviceLostCallbackInfo lost_cb_info;
+  lost_cb_info.callback              = helpers::default_device_lost_callback;
+  lost_cb_info.mode                  = wgpu::CallbackMode::AllowProcessEvents;
+
+  device_desc.deviceLostCallbackInfo = lost_cb_info;
+
   std::promise<WGPUDevice> device_req_promise;
   std::future<WGPUDevice>  device_req_future = device_req_promise.get_future();
 
@@ -149,8 +149,21 @@ void Globals::initialize(int width, int height)
   }
 
   /* set default callbacks */
-  device_.SetDeviceLostCallback(helpers::default_device_lost_callback, nullptr);
   device_.SetUncapturedErrorCallback(helpers::default_error_callback, nullptr);
+
+  queue_ = getDevice().GetQueue();
+}
+
+void Globals::initializeGLFW()
+{
+
+  /* GLFW init */
+  glfwInitHint(GLFW_CLIENT_API, GLFW_NO_API);
+  glfwInit();
+  glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+  window_  = glfwCreateWindow(width_, height_, "RNDR", nullptr, nullptr);
+
+  surface_ = Surface::Acquire(glfwGetWGPUSurface(instance_.Get(), window_));
 
   /* get swap chain */
   SwapChainDescriptor sc_desc = {};
@@ -161,9 +174,16 @@ void Globals::initialize(int width, int height)
   sc_desc.presentMode         = wgpu::PresentMode::Fifo;
   sc_desc.label               = "Main SwapChain";
 
-  swap_chain_  = std::move(device_.CreateSwapChain(surface_, &sc_desc));
+  swap_chain_ = std::move(device_.CreateSwapChain(surface_, &sc_desc));
+}
 
-  queue_       = getDevice().GetQueue();
+void Globals::initialize(int width, int height)
+{
+  width_  = width;
+  height_ = height;
+
+  initializeWebGPU();
+  /* initializeGLFW(); */
 
   initialized_ = true;
 }

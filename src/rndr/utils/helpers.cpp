@@ -202,7 +202,8 @@ fn fs_main() -> @location(0) vec4<f32> {
 }
 
 namespace helpers {
-void default_device_lost_callback(WGPUDeviceLostReason reason,
+void default_device_lost_callback(WGPUDevice const    *device,
+                                  WGPUDeviceLostReason reason,
                                   char const          *message,
                                   void                *userdata)
 {

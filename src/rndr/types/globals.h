@@ -75,7 +75,11 @@ protected:
   int                            width_             = 0;
   int                            height_            = 0;
 
-  bool                           initialized_       = false;
+private:
+  void initializeWebGPU();
+  void initializeGLFW();
+
+  bool initialized_ = false;
 };
 
 class GlobalAccess {
