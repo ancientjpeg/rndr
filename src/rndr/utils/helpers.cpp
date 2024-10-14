@@ -10,7 +10,6 @@
  */
 
 #include "helpers.h"
-#include "glfw3webgpu.h"
 
 #include <iostream>
 #include <vector>
@@ -105,32 +104,10 @@ wgpu::Device requestWGPUDevice(wgpu::Adapter adapter)
 
   std::cout << "Got device: " << udata.device.Get() << std::endl;
 
-  return udata.device;
+  return std::move(udata.device);
 }
 
-_Globals requestGlobals(GLFWwindow *window)
-{
-
-  _Globals globals;
-
-  /* get instance */
-  wgpu::InstanceDescriptor instance_desc = {};
-  instance_desc.nextInChain              = nullptr;
-
-  globals.instance                       = wgpu::CreateInstance(&instance_desc);
-  globals.surface                        = wgpu::Surface::Acquire(
-      glfwGetWGPUSurface(globals.instance.Get(), window));
-
-  globals.adapter = requestWGPUAdapter(globals.instance, globals.surface);
-  globals.device  = requestWGPUDevice(globals.adapter);
-
-  globals.device.SetUncapturedErrorCallback(wgpu_error_callback, nullptr);
-  globals.device.SetDeviceLostCallback(wgpu_device_lost_callback, nullptr);
-
-  return globals;
-}
-
-wgpu::RenderPipeline createRenderPipeline(_Globals globals)
+wgpu::RenderPipeline createRenderPipeline(Globals &globals)
 {
 
   const char *shaderSource = R"(
@@ -164,7 +141,7 @@ fn fs_main() -> @location(0) vec4<f32> {
   shader_module_desc.label                        = "Default Shader Module";
   shader_module_desc.nextInChain                  = &shader_code_desc;
   wgpu::ShaderModule shader_module
-      = globals.device.CreateShaderModule(&shader_module_desc);
+      = globals.getDevice().CreateShaderModule(&shader_module_desc);
 
   wgpu::RenderPipelineDescriptor pipeline_desc = {};
   pipeline_desc.nextInChain                    = nullptr;
@@ -219,7 +196,7 @@ fn fs_main() -> @location(0) vec4<f32> {
   pipeline_desc.layout = nullptr;
 
   wgpu::RenderPipeline ret
-      = globals.device.CreateRenderPipeline(&pipeline_desc);
+      = globals.getDevice().CreateRenderPipeline(&pipeline_desc);
 
   return ret;
 }

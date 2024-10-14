@@ -5,6 +5,7 @@ add_library(rndr STATIC
 
 add_subdirectory(math)
 add_subdirectory(resources)
+add_subdirectory(types)
 add_subdirectory(utils)
 
 

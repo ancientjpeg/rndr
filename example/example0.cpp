@@ -6,47 +6,21 @@
 #include <imgui.h>
 #include <iostream>
 
-static rndr::_Globals globals;
-constexpr int         w = 640;
-constexpr int         h = 480;
+constexpr int w = 640;
+constexpr int h = 480;
 
-int                   main()
+int           main()
 {
   rndr::Application program_gpu;
   program_gpu.initialize();
 
-  glfwInitHint(GLFW_CLIENT_API, GLFW_NO_API);
-  glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+  const wgpu::Device &device = program_gpu.getDevice();
 
-  glfwInit();
-  GLFWwindow *window = glfwCreateWindow(w, h, "LearnWebGPU", nullptr, nullptr);
-
-  if (!window) {
-    std::cerr << "GLFW could not open window!" << std::endl;
-    glfwTerminate();
-    return 1;
-  }
-
-  globals              = rndr::requestGlobals(window);
-  auto device          = globals.device;
-
-  auto on_queue_finish = [](WGPUQueueWorkDoneStatus status, void *) {
+  auto on_queue_finish       = [](WGPUQueueWorkDoneStatus status, void *) {
     std::cout << "FINISHED QUEUE WORK" << std::endl;
   };
 
-  wgpu::Queue queue = globals.device.GetQueue();
-  queue.OnSubmittedWorkDone(on_queue_finish, nullptr);
-  wgpu::SwapChainDescriptor swap_chain_desc = {};
-  swap_chain_desc.nextInChain               = nullptr;
-  swap_chain_desc.width                     = w;
-  swap_chain_desc.height                    = h;
-  swap_chain_desc.format                    = wgpu::TextureFormat::BGRA8Unorm;
-  swap_chain_desc.usage       = wgpu::TextureUsage::RenderAttachment;
-  swap_chain_desc.presentMode = wgpu::PresentMode::Fifo;
-  wgpu::SwapChain swap_chain
-      = device.CreateSwapChain(globals.surface, &swap_chain_desc);
-
-  wgpu::RenderPipeline pipeline = rndr::createRenderPipeline(globals);
+  wgpu::RenderPipeline pipeline = rndr::createRenderPipeline(program_gpu);
 
   /* buffer write test */
   wgpu::BufferDescriptor buffer_desc;
@@ -63,15 +37,16 @@ int                   main()
   std::fill(nums.begin(), nums.end(), 5.2f);
   std::fill(nums_out.begin(), nums_out.end(), 0.2f);
 
-  queue.WriteBuffer(buffer1, 0, nums.data(), nums.size() * sizeof(float));
+  program_gpu.getQueue().WriteBuffer(buffer1, 0, nums.data(),
+                                     nums.size() * sizeof(float));
 
   wgpu::CommandEncoderDescriptor enc_desc{};
   wgpu::CommandEncoder           enc = device.CreateCommandEncoder(&enc_desc);
   enc.CopyBufferToBuffer(buffer1, 0, buffer2, 0, 16 * sizeof(float));
   wgpu::CommandBufferDescriptor buf_desc{};
   wgpu::CommandBuffer           temp_cbuf = enc.Finish(&buf_desc);
-  queue.Submit(1, &temp_cbuf);
-  queue.OnSubmittedWorkDone(on_queue_finish, nullptr);
+  program_gpu.getQueue().Submit(1, &temp_cbuf);
+  program_gpu.getQueue().OnSubmittedWorkDone(on_queue_finish, nullptr);
 
   /* buffer 2 map operation */
   struct Context {
@@ -92,7 +67,7 @@ int                   main()
 
   buffer2.MapAsync(wgpu::MapMode::Read, 0, 16 * sizeof(float), cbk, &ctx);
 
-  while (!glfwWindowShouldClose(window)) {
+  while (!glfwWindowShouldClose(program_gpu.getWindow())) {
 
     /* check async ops */
     device.Tick();
@@ -101,7 +76,8 @@ int                   main()
     glfwPollEvents();
 
     /* get current texture to write to */
-    wgpu::TextureView next_tex = swap_chain.GetCurrentTextureView();
+    wgpu::TextureView next_tex
+        = program_gpu.getSwapChain().GetCurrentTextureView();
 
     if (!next_tex) {
       std::cerr << "Cannot acquire next swap chain texture" << std::endl;
@@ -147,18 +123,15 @@ int                   main()
 
     /* encode the command buffer, push to queue */
     wgpu::CommandBuffer command_buffer = encoder.Finish(&command_buffer_desc);
-    queue.Submit(1, &command_buffer);
+    program_gpu.getQueue().Submit(1, &command_buffer);
 
     /* use onSubmittedWorkDone to hold the loop until the next frame. */
     // queue.OnSubmittedWorkDone(0, on_queue_finish, nullptr);
 
     /* finally, present the next texture */
-    swap_chain.Present();
+    program_gpu.getSwapChain().Present();
   }
 
   buffer1.Destroy();
   buffer2.Destroy();
-
-  glfwDestroyWindow(window);
-  glfwTerminate();
 }

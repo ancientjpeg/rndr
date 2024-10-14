@@ -15,7 +15,6 @@
 #include "rndr/types/globals.h"
 
 #include "webgpu/webgpu_cpp.h"
-#include <GLFW/glfw3.h>
 #include <filesystem>
 #include <map>
 
@@ -35,28 +34,8 @@ public:
   Application &operator=(const Application &) = delete;
 
   /* non-movable */
-  Application(Application &&)            = delete;
-  Application &operator=(Application &&) = delete;
-
-  /**
-   * @brief Set the required features. Call this before a call to `initialize`.
-   */
-  void setRequiredFeatures(std::vector<wgpu::FeatureName> required_features);
-
-  /**
-   * @brief Set the required limits. Call this before a call to `initialize`.
-   */
-  void setRequiredLimits(wgpu::Limits required_limits);
-
-  /**
-   * @brief Initialize all global WebGPU and GLFW objects.
-   *
-   * @note `initialize()` can throw.
-   *
-   * @param width Initial width of the screen, in pixels
-   * @param height Initial height of the screen, in pixels
-   */
-  void                initialize(int width = 640, int height = 480);
+  Application(Application &&)                   = delete;
+  Application        &operator=(Application &&) = delete;
 
   bool                addShaderSource(std::filesystem::path shader_path);
 
@@ -64,18 +43,6 @@ public:
 
 private:
   void collectShaderSource_(bool rescan = false);
-
-  /* Global WGPU objects */
-  wgpu::Surface   surface_;
-
-  wgpu::SwapChain swap_chain_;
-
-  /* Features and limits */
-  std::vector<wgpu::FeatureName> required_features_ = {};
-  wgpu::RequiredLimits           required_limits_   = {};
-
-  /* Global GLFW objects */
-  GLFWwindow *window_ = {};
 
   /* Shader storage */
   struct ShaderSource {
@@ -87,9 +54,6 @@ private:
 
   std::filesystem::path               support_dir_ = {};
   std::filesystem::path               shader_dir_  = {};
-
-  int                                 width_       = 0;
-  int                                 height_      = 0;
 
   std::mutex                          frame_lock;
 };

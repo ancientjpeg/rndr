@@ -9,6 +9,8 @@
  *
  */
 
+#include <rndr/types/globals.h>
+
 #include "webgpu/webgpu_cpp.h"
 #include <GLFW/glfw3.h>
 
@@ -17,16 +19,7 @@
 
 namespace rndr {
 
-struct _Globals {
-  wgpu::Instance instance;
-  wgpu::Adapter  adapter;
-  wgpu::Device   device;
-  wgpu::Surface  surface;
-};
-
-_Globals             requestGlobals(GLFWwindow *window);
-
-wgpu::RenderPipeline createRenderPipeline(_Globals globals);
+wgpu::RenderPipeline createRenderPipeline(Globals &globals);
 
 namespace helpers {
 
