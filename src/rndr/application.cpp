@@ -19,8 +19,6 @@
 #include <iostream>
 #include <sstream>
 
-using std::literals::string_literals::operator""s;
-
 namespace rndr {
 
 using namespace wgpu;
@@ -114,8 +112,8 @@ void Application::initialize(int width, int height)
   for (FeatureName feature : required_features_) {
     if (std::find(features_.begin(), features_.end(), feature)
         == features_.end()) {
-      throw std::runtime_error("Feature with code"s
-                               + std::to_string((int)feature) + "unavailable"s);
+      throw std::runtime_error("Feature with code"
+                               + std::to_string((int)feature) + "unavailable");
     }
   }
 
