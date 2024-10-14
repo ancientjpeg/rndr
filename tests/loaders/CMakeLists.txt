@@ -1,3 +1,3 @@
 target_sources(tests PRIVATE
-  obj.cpp
+  obj_parse.tests.cpp
 )

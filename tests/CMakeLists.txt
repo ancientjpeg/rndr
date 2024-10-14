@@ -12,5 +12,6 @@ add_executable(tests)
 
 add_subdirectory(loaders)
 add_subdirectory(math)
+add_subdirectory(sanity)
 
 target_link_libraries(tests PRIVATE Catch2::Catch2WithMain rndr)
