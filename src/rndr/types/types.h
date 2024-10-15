@@ -52,13 +52,19 @@ struct Result {
     return os;
   }
 
-  bool ok()
+  bool ok() const
   {
     return success_;
   }
 
+  operator bool() const
+  {
+    return ok();
+  }
+
 private:
-  Result(std::string message, bool success) : message_(message)
+  Result(std::string message, bool success)
+      : message_(message), success_(success)
   {
   }
 

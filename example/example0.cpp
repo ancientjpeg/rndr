@@ -12,7 +12,12 @@ constexpr int h = 480;
 int           main()
 {
   rndr::Application program_gpu;
-  program_gpu.initialize();
+  rndr::Result      init_result = program_gpu.initialize();
+
+  if (!init_result.ok()) {
+    std::cerr << "Initialization failed for reason: " << init_result;
+    return 1;
+  }
 
   const wgpu::Device  &device   = program_gpu.getDevice();
 

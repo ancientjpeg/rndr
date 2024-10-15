@@ -10,7 +10,6 @@
  */
 
 #include "application.h"
-#include "rndr/types/types.h"
 #include "rndr/utils/helpers.h"
 
 #include <cassert>

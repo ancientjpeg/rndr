@@ -88,8 +88,8 @@ Result Globals::initializeWebGPU()
   for (wgpu::FeatureName feature : required_features_) {
     if (std::find(features_.begin(), features_.end(), feature)
         == features_.end()) {
-      throw std::runtime_error("Feature with code"
-                               + std::to_string((int)feature) + "unavailable");
+      return Result::error("Feature with code" + std::to_string((int)feature)
+                           + "unavailable");
     }
   }
 
@@ -99,7 +99,7 @@ Result Globals::initializeWebGPU()
 
   if (!helpers::limits_supported(supported_limits.limits,
                                  required_limits_.limits)) {
-    throw std::runtime_error("Cannot support required limits");
+    return Result::error("Cannot support required limits");
   }
 
   /* Request device */
@@ -115,17 +115,22 @@ Result Globals::initializeWebGPU()
 
   device_desc.deviceLostCallbackInfo = lost_cb_info;
 
-  wgpu::Future device_future         = adapter_.RequestDevice(
+  std::string  error_msg;
+  wgpu::Future device_future = adapter_.RequestDevice(
       &device_desc, wgpu::CallbackMode::AllowProcessEvents,
-      [this](wgpu::RequestDeviceStatus status, wgpu::Device device,
-             char const *message) {
+      [&](wgpu::RequestDeviceStatus status, wgpu::Device device,
+          char const *message) {
         if (status != wgpu::RequestDeviceStatus::Success) {
-          throw std::runtime_error(message);
+          error_msg = message;
         }
         device_ = std::move(device);
       });
 
   blockOnFuture(device_future);
+
+  if (!error_msg.empty()) {
+    return Result::error(error_msg);
+  }
 
   /* set default callbacks */
   device_.SetUncapturedErrorCallback(helpers::default_error_callback, nullptr);
@@ -144,6 +149,8 @@ Result Globals::initializeWebGPU()
   /* @todo stop using glfw3webgpu and use our own surface descriptor to get
    * swapchain */
   swap_chain_ = std::move(device_.CreateSwapChain(surface_, &sc_desc));
+
+  return Result::success();
 }
 
 Result Globals::initializeGLFW()
@@ -162,13 +169,22 @@ Result Globals::initializeGLFW()
 
 Result Globals::initialize(int width, int height)
 {
-  width_  = width;
-  height_ = height;
+  width_             = width;
+  height_            = height;
 
-  initializeGLFW();
-  initializeWebGPU();
+  Result glfw_result = Result::error(), wgpu_result = Result::error();
+
+  if (!(glfw_result = initializeGLFW())) {
+    return glfw_result;
+  }
+
+  if (!(wgpu_result = initializeWebGPU())) {
+    return wgpu_result;
+  }
 
   initialized_ = true;
+
+  return Result::success();
 }
 
 bool Globals::blockOnFuture(wgpu::Future future)
@@ -190,13 +206,7 @@ wgpu::Future Globals::getSubmittedWorkFuture()
   wgpu::Future future = getQueue().OnSubmittedWorkDone(
       wgpu::CallbackMode::AllowProcessEvents,
       [](wgpu::QueueWorkDoneStatus status) {
-        auto now = std::chrono::system_clock::now().time_since_epoch();
-        auto now_ms
-            = std::chrono::duration_cast<std::chrono::milliseconds>(now);
-
-        std::cout << "Queue work succeeded: "
-                  << (status == wgpu::QueueWorkDoneStatus::Success)
-                  << now_ms.count() << std::endl;
+        assert(status == wgpu::QueueWorkDoneStatus::Success);
       });
 
   return future;
