@@ -46,10 +46,12 @@ void Globals::setRequiredLimits(wgpu::Limits required_limits)
   required_limits_.limits = std::move(required_limits);
 }
 
-void Globals::initializeWebGPU()
+Result Globals::initializeWebGPU()
 {
-  wgpu::InstanceDescriptor       instance_desc = {};
-  instance_                                    = CreateInstance(&instance_desc);
+  wgpu::InstanceDescriptor instance_desc      = {};
+  instance_desc.features.timedWaitAnyEnable   = true;
+  instance_desc.features.timedWaitAnyMaxCount = 8;
+  instance_                                   = CreateInstance(&instance_desc);
 
   surface_
       = wgpu::Surface::Acquire(glfwGetWGPUSurface(instance_.Get(), window_));
@@ -72,7 +74,8 @@ void Globals::initializeWebGPU()
         };
 
   wgpu::Future adapter_wait_future = instance_.RequestAdapter(
-      &adapter_opts, wgpu::CallbackMode::WaitAnyOnly, adapter_req_callback);
+      &adapter_opts, wgpu::CallbackMode::AllowProcessEvents,
+      adapter_req_callback);
   blockOnFuture(adapter_wait_future);
 
   /* Get features */
@@ -113,7 +116,7 @@ void Globals::initializeWebGPU()
   device_desc.deviceLostCallbackInfo = lost_cb_info;
 
   wgpu::Future device_future         = adapter_.RequestDevice(
-      &device_desc, wgpu::CallbackMode::WaitAnyOnly,
+      &device_desc, wgpu::CallbackMode::AllowProcessEvents,
       [this](wgpu::RequestDeviceStatus status, wgpu::Device device,
              char const *message) {
         if (status != wgpu::RequestDeviceStatus::Success) {
@@ -143,16 +146,21 @@ void Globals::initializeWebGPU()
   swap_chain_ = std::move(device_.CreateSwapChain(surface_, &sc_desc));
 }
 
-void Globals::initializeGLFW()
+Result Globals::initializeGLFW()
 {
   /* GLFW init */
   glfwInitHint(GLFW_CLIENT_API, GLFW_NO_API);
   glfwInit();
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
   window_ = glfwCreateWindow(width_, height_, "RNDR", nullptr, nullptr);
+  if (window_ == nullptr) {
+    return Result::error("Failed to create GLFW window");
+  }
+
+  return Result::success();
 }
 
-void Globals::initialize(int width, int height)
+Result Globals::initialize(int width, int height)
 {
   width_  = width;
   height_ = height;
@@ -166,10 +174,42 @@ void Globals::initialize(int width, int height)
 bool Globals::blockOnFuture(wgpu::Future future)
 {
   assert(instance_.Get() != nullptr);
+  constexpr auto       timeout    = std::chrono::milliseconds(100);
+  constexpr auto       timeout_ns = std::chrono::nanoseconds(timeout).count();
+
   wgpu::FutureWaitInfo wait_info{future};
-  wgpu::WaitStatus     wait_status = instance_.WaitAny(1, &wait_info, 0);
-  assert(wait_status == wgpu::WaitStatus::Success);
-  return wait_info.completed;
+  wgpu::WaitStatus wait_status  = instance_.WaitAny(1, &wait_info, timeout_ns);
+  bool             wait_success = wait_status == wgpu::WaitStatus::Success;
+  assert(wait_success);
+  return wait_info.completed && wait_success;
+}
+
+wgpu::Future Globals::getSubmittedWorkFuture()
+{
+  assert(isInitialized());
+  wgpu::Future future = getQueue().OnSubmittedWorkDone(
+      wgpu::CallbackMode::AllowProcessEvents,
+      [](wgpu::QueueWorkDoneStatus status) {
+        auto now = std::chrono::system_clock::now().time_since_epoch();
+        auto now_ms
+            = std::chrono::duration_cast<std::chrono::milliseconds>(now);
+
+        std::cout << "Queue work succeeded: "
+                  << (status == wgpu::QueueWorkDoneStatus::Success)
+                  << now_ms.count() << std::endl;
+      });
+
+  return future;
+}
+
+void Globals::blockOnSubmittedWork()
+{
+  blockOnFuture(getSubmittedWorkFuture());
+}
+
+void Globals::processEvents()
+{
+  instance_.ProcessEvents();
 }
 
 bool Globals::isInitialized()

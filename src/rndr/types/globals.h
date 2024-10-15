@@ -12,10 +12,11 @@
 #ifndef RNDR_GLOBALS_H_
 #define RNDR_GLOBALS_H_
 
-#include <GLFW/glfw3.h>
-#include <webgpu/webgpu_cpp.h>
+#include "rndr/types/types.h"
 
+#include <GLFW/glfw3.h>
 #include <vector>
+#include <webgpu/webgpu_cpp.h>
 
 namespace rndr {
 
@@ -42,7 +43,7 @@ public:
    * @param width Initial width of the screen, in pixels
    * @param height Initial height of the screen, in pixels
    */
-  void                 initialize(int width = 640, int height = 480);
+  Result               initialize(int width = 640, int height = 480);
   bool                 isInitialized();
 
   const wgpu::Device  &getDevice();
@@ -56,7 +57,12 @@ public:
   bool                                  hasFeature(wgpu::FeatureName feature);
 
   /* returns true if the blocked future is completed */
-  bool blockOnFuture(wgpu::Future future);
+  bool         blockOnFuture(wgpu::Future future);
+
+  wgpu::Future getSubmittedWorkFuture();
+  void         blockOnSubmittedWork();
+
+  void         processEvents();
 
 protected:
   wgpu::Instance  instance_   = {};
@@ -78,10 +84,10 @@ protected:
   int                            height_            = 0;
 
 private:
-  void initializeWebGPU();
-  void initializeGLFW();
+  Result initializeWebGPU();
+  Result initializeGLFW();
 
-  bool initialized_ = false;
+  bool   initialized_ = false;
 };
 
 class GlobalAccess {

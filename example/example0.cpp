@@ -14,11 +14,7 @@ int           main()
   rndr::Application program_gpu;
   program_gpu.initialize();
 
-  const wgpu::Device &device = program_gpu.getDevice();
-
-  auto on_queue_finish       = [](WGPUQueueWorkDoneStatus status, void *) {
-    std::cout << "FINISHED QUEUE WORK" << std::endl;
-  };
+  const wgpu::Device  &device   = program_gpu.getDevice();
 
   wgpu::RenderPipeline pipeline = rndr::createRenderPipeline(program_gpu);
 
@@ -46,7 +42,9 @@ int           main()
   wgpu::CommandBufferDescriptor buf_desc{};
   wgpu::CommandBuffer           temp_cbuf = enc.Finish(&buf_desc);
   program_gpu.getQueue().Submit(1, &temp_cbuf);
-  program_gpu.getQueue().OnSubmittedWorkDone(on_queue_finish, nullptr);
+  auto copy_future = program_gpu.getSubmittedWorkFuture();
+  program_gpu.processEvents();
+  program_gpu.blockOnFuture(copy_future);
 
   /* buffer 2 map operation */
   struct Context {
@@ -55,25 +53,27 @@ int           main()
   };
   Context ctx{nums_out, buffer2};
 
-  auto    cbk = [](WGPUBufferMapAsyncStatus status, void *userdata) {
-    auto  *ctx_ptr = (Context *)userdata;
-
-    float *range
-        = (float *)ctx_ptr->buffer.GetConstMappedRange(0, 16 * sizeof(float));
-    std::copy(range, range + 16, ctx_ptr->out.data());
+  auto    cbk = [&](wgpu::MapAsyncStatus status, const char *message) {
+    float *range = (float *)buffer2.GetConstMappedRange(0, 16 * sizeof(float));
+    std::copy(range, range + 16, nums_out.begin());
     std::cout << "BUFFER2 COPY SUCCESS" << std::endl;
-    ctx_ptr->buffer.Unmap();
+    buffer2.Unmap();
   };
 
-  buffer2.MapAsync(wgpu::MapMode::Read, 0, 16 * sizeof(float), cbk, &ctx);
+  buffer2.MapAsync(wgpu::MapMode::Read, 0, 16 * sizeof(float),
+                   wgpu::CallbackMode::AllowProcessEvents, cbk);
+
+  auto map_future = program_gpu.getSubmittedWorkFuture();
+  program_gpu.blockOnFuture(map_future);
 
   while (!glfwWindowShouldClose(program_gpu.getWindow())) {
 
-    /* check async ops */
-    device.Tick();
     // Check whether the user clicked on the close button (and any other
     // mouse/key event, which we don't use so far)
     glfwPollEvents();
+
+    /* check async ops */
+    program_gpu.processEvents();
 
     /* get current texture to write to */
     wgpu::TextureView next_tex
@@ -96,7 +96,7 @@ int           main()
     color_attachment.view                            = next_tex;
     color_attachment.loadOp                          = wgpu::LoadOp::Clear;
     color_attachment.storeOp                         = wgpu::StoreOp::Store;
-    color_attachment.clearValue                      = {1, 0, 0, 1};
+    color_attachment.clearValue                      = {0, 0, 0, 1};
 
     /* describe render pass */
     wgpu::RenderPassDescriptor pass_desc = {};
@@ -125,8 +125,8 @@ int           main()
     wgpu::CommandBuffer command_buffer = encoder.Finish(&command_buffer_desc);
     program_gpu.getQueue().Submit(1, &command_buffer);
 
-    /* use onSubmittedWorkDone to hold the loop until the next frame. */
-    // queue.OnSubmittedWorkDone(0, on_queue_finish, nullptr);
+    wgpu::Future work_future = program_gpu.getSubmittedWorkFuture();
+    /* program_gpu.blockOnFuture(work_future); */
 
     /* finally, present the next texture */
     program_gpu.getSwapChain().Present();

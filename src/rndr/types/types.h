@@ -14,6 +14,7 @@
 
 #include "rndr/math/matrix.h"
 
+#include <iostream>
 #include <type_traits>
 #include <vector>
 #include <webgpu/webgpu_cpp.h>
@@ -26,19 +27,43 @@ struct is_string
                               std::is_same<const char *, std::decay_t<T>>,
                               std::is_same<std::string, std::decay_t<T>>> {};
 
-struct Error {
+struct Result {
 
-  Error(std::string message) : message_(message)
+  static Result success(std::string message = {})
   {
+    return Result(message, true);
   }
 
-  operator const char *() const
+  static Result error(std::string message = {})
   {
-    return message_.data();
+    return Result(message, false);
+  }
+
+  friend std::ostream &operator<<(std::ostream &os, const Result &result)
+  {
+    const char *msg = result.success_ ? "Succeeded" : "Failed";
+    os << msg;
+    if (!result.message_.empty()) {
+      os << " with message: " << result.message_;
+    }
+    else {
+      os << " with no message";
+    }
+    return os;
+  }
+
+  bool ok()
+  {
+    return success_;
   }
 
 private:
+  Result(std::string message, bool success) : message_(message)
+  {
+  }
+
   std::string message_;
+  bool        success_ = false;
 };
 
 /********** Mesh Data **********/
