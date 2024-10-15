@@ -15,85 +15,74 @@
 #include "globals.h"
 
 #include <cassert>
-#include <future>
 #include <iostream>
 
 namespace rndr {
-using namespace wgpu;
 
 Globals::~Globals()
 {
+  /* manually release wgpu surface-related assets */
+  wgpuSwapChainRelease(swap_chain_.MoveToCHandle());
+  wgpuSurfaceRelease(surface_.MoveToCHandle());
+
   glfwDestroyWindow(getWindow());
   glfwTerminate();
 
-  assert(device_.GetAdapter().MoveToCHandle() != nullptr);
+  wgpuQueueRelease(queue_.MoveToCHandle());
   wgpuDeviceRelease(device_.MoveToCHandle());
-  std::this_thread::sleep_for(std::chrono::seconds(1));
-  /* wgpuInstanceRelease(instance_.MoveToCHandle()); */
+  instance_.ProcessEvents();
+  wgpuInstanceRelease(instance_.MoveToCHandle());
 }
 
 /* PRE-INIT SETTERS */
-void Globals::setRequiredFeatures(std::vector<FeatureName> required_features)
+void Globals::setRequiredFeatures(
+    std::vector<wgpu::FeatureName> required_features)
 {
   required_features_ = std::move(required_features);
 }
 
-void Globals::setRequiredLimits(Limits required_limits)
+void Globals::setRequiredLimits(wgpu::Limits required_limits)
 {
   required_limits_.limits = std::move(required_limits);
 }
 
 void Globals::initializeWebGPU()
 {
-  /* Instance + surface init */
-  InstanceDescriptor instance_desc = {};
-  instance_                        = CreateInstance();
+  wgpu::InstanceDescriptor       instance_desc = {};
+  instance_                                    = CreateInstance(&instance_desc);
+
+  surface_
+      = wgpu::Surface::Acquire(glfwGetWGPUSurface(instance_.Get(), window_));
 
   /* Request adapter */
-  RequestAdapterOptions adapter_opts = {};
-  adapter_opts.powerPreference       = PowerPreference::HighPerformance;
-  adapter_opts.compatibleSurface     = surface_;
+  wgpu::RequestAdapterOptions adapter_opts = {};
+  adapter_opts.powerPreference   = wgpu::PowerPreference::HighPerformance;
+  adapter_opts.compatibleSurface = surface_;
 
-  std::promise<WGPUAdapter> adapter_req_promise;
-  std::future<WGPUAdapter>  adapter_req_future
-      = adapter_req_promise.get_future();
+  wgpu::Adapter adapter_;
 
-  auto adapter_req_callback = [](WGPURequestAdapterStatus status,
-                                 WGPUAdapter adapter, char const *message,
-                                 void *userdata) {
-    if (status != WGPURequestAdapterStatus_Success) {
-      std::cerr << "ADAPTER REQUEST FAILED WITH MESSAGE: " << message
-                << std::endl;
-    }
-    else {
-      static_cast<std::promise<WGPUAdapter> *>(userdata)->set_value(adapter);
-    }
-  };
+  auto          adapter_req_callback
+      = [&adapter_](wgpu::RequestAdapterStatus status, wgpu::Adapter adapter,
+                    char const *message) {
+          if (status != wgpu::RequestAdapterStatus::Success) {
+            std::cerr << "ADAPTER REQUEST FAILED WITH MESSAGE: " << message
+                      << std::endl;
+          }
+          adapter_ = std::move(adapter);
+        };
 
-  instance_.RequestAdapter(&adapter_opts, adapter_req_callback,
-                           &adapter_req_promise);
-
-  wgpu::Adapter adapter;
-
-  try {
-    adapter = Adapter::Acquire(adapter_req_future.get());
-    std::cout << "Successfully acquired adapter at address:" << adapter.Get()
-              << std::endl;
-  }
-  catch (std::exception &e) {
-    std::cerr << "Adapter request failed with following message: " << e.what()
-              << std::endl;
-    throw e;
-  }
+  wgpu::Future adapter_wait_future = instance_.RequestAdapter(
+      &adapter_opts, wgpu::CallbackMode::WaitAnyOnly, adapter_req_callback);
+  blockOnFuture(adapter_wait_future);
 
   /* Get features */
-  features_.resize(adapter.EnumerateFeatures(nullptr));
-  adapter.EnumerateFeatures(features_.data());
+  features_.resize(adapter_.EnumerateFeatures(nullptr));
+  adapter_.EnumerateFeatures(features_.data());
 
   std::sort(features_.begin(), features_.end());
   std::sort(required_features_.begin(), required_features_.end());
 
-  for (FeatureName feature : required_features_) {
+  for (wgpu::FeatureName feature : required_features_) {
     if (std::find(features_.begin(), features_.end(), feature)
         == features_.end()) {
       throw std::runtime_error("Feature with code"
@@ -102,8 +91,8 @@ void Globals::initializeWebGPU()
   }
 
   /* Test limits */
-  SupportedLimits supported_limits = {};
-  adapter.GetLimits(&supported_limits);
+  wgpu::SupportedLimits supported_limits = {};
+  adapter_.GetLimits(&supported_limits);
 
   if (!helpers::limits_supported(supported_limits.limits,
                                  required_limits_.limits)) {
@@ -111,11 +100,11 @@ void Globals::initializeWebGPU()
   }
 
   /* Request device */
-  DeviceDescriptor device_desc     = {};
-  device_desc.requiredFeatures     = features_.data();
-  device_desc.requiredFeatureCount = features_.size();
-  device_desc.requiredLimits       = &required_limits_;
-  device_desc.label                = "rndr Application Device";
+  wgpu::DeviceDescriptor device_desc = {};
+  device_desc.requiredFeatures       = features_.data();
+  device_desc.requiredFeatureCount   = features_.size();
+  device_desc.requiredLimits         = &required_limits_;
+  device_desc.label                  = "rndr Application Device";
 
   wgpu::DeviceLostCallbackInfo lost_cb_info;
   lost_cb_info.callback              = helpers::default_device_lost_callback;
@@ -123,58 +112,44 @@ void Globals::initializeWebGPU()
 
   device_desc.deviceLostCallbackInfo = lost_cb_info;
 
-  std::promise<WGPUDevice> device_req_promise;
-  std::future<WGPUDevice>  device_req_future = device_req_promise.get_future();
-
-  adapter.RequestDevice(
-      &device_desc,
-      [](WGPURequestDeviceStatus status, WGPUDevice device, char const *message,
-         void *userdata) {
-        if (status != WGPURequestDeviceStatus_Success) {
+  wgpu::Future device_future         = adapter_.RequestDevice(
+      &device_desc, wgpu::CallbackMode::WaitAnyOnly,
+      [this](wgpu::RequestDeviceStatus status, wgpu::Device device,
+             char const *message) {
+        if (status != wgpu::RequestDeviceStatus::Success) {
           throw std::runtime_error(message);
         }
-        static_cast<std::promise<WGPUDevice> *>(userdata)->set_value(device);
-      },
-      &device_req_promise);
+        device_ = std::move(device);
+      });
 
-  try {
-    device_ = Device::Acquire(device_req_future.get());
-    std::cout << "Successfully acquired device at address:" << device_.Get()
-              << std::endl;
-  }
-  catch (std::exception &e) {
-    std::cerr << "Device request failed with following message: " << e.what()
-              << std::endl;
-    throw e;
-  }
+  blockOnFuture(device_future);
 
   /* set default callbacks */
   device_.SetUncapturedErrorCallback(helpers::default_error_callback, nullptr);
 
   queue_ = getDevice().GetQueue();
+
+  /* get swap chain */
+  wgpu::SwapChainDescriptor sc_desc = {};
+  sc_desc.width                     = width_;
+  sc_desc.height                    = height_;
+  sc_desc.format                    = wgpu::TextureFormat::BGRA8Unorm;
+  sc_desc.usage                     = wgpu::TextureUsage::RenderAttachment;
+  sc_desc.presentMode               = wgpu::PresentMode::Fifo;
+  sc_desc.label                     = "Main SwapChain";
+
+  /* @todo stop using glfw3webgpu and use our own surface descriptor to get
+   * swapchain */
+  swap_chain_ = std::move(device_.CreateSwapChain(surface_, &sc_desc));
 }
 
 void Globals::initializeGLFW()
 {
-
   /* GLFW init */
   glfwInitHint(GLFW_CLIENT_API, GLFW_NO_API);
   glfwInit();
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-  window_  = glfwCreateWindow(width_, height_, "RNDR", nullptr, nullptr);
-
-  surface_ = Surface::Acquire(glfwGetWGPUSurface(instance_.Get(), window_));
-
-  /* get swap chain */
-  SwapChainDescriptor sc_desc = {};
-  sc_desc.width               = width_;
-  sc_desc.height              = height_;
-  sc_desc.format              = wgpu::TextureFormat::BGRA8Unorm;
-  sc_desc.usage               = wgpu::TextureUsage::RenderAttachment;
-  sc_desc.presentMode         = wgpu::PresentMode::Fifo;
-  sc_desc.label               = "Main SwapChain";
-
-  swap_chain_ = std::move(device_.CreateSwapChain(surface_, &sc_desc));
+  window_ = glfwCreateWindow(width_, height_, "RNDR", nullptr, nullptr);
 }
 
 void Globals::initialize(int width, int height)
@@ -182,10 +157,19 @@ void Globals::initialize(int width, int height)
   width_  = width;
   height_ = height;
 
+  initializeGLFW();
   initializeWebGPU();
-  /* initializeGLFW(); */
 
   initialized_ = true;
+}
+
+bool Globals::blockOnFuture(wgpu::Future future)
+{
+  assert(instance_.Get() != nullptr);
+  wgpu::FutureWaitInfo wait_info{future};
+  wgpu::WaitStatus     wait_status = instance_.WaitAny(1, &wait_info, 0);
+  assert(wait_status == wgpu::WaitStatus::Success);
+  return wait_info.completed;
 }
 
 bool Globals::isInitialized()

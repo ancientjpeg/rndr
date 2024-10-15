@@ -55,21 +55,23 @@ public:
 
   bool                                  hasFeature(wgpu::FeatureName feature);
 
+  /* returns true if the blocked future is completed */
+  bool blockOnFuture(wgpu::Future future);
+
 protected:
-  wgpu::Limits                   limits_     = {};
+  wgpu::Instance  instance_   = {};
+  wgpu::Device    device_     = {};
+  wgpu::Queue     queue_      = {};
 
-  wgpu::Instance                 instance_   = {};
-  wgpu::Device                   device_     = {};
-  wgpu::Queue                    queue_      = {};
-
-  wgpu::Surface                  surface_    = {};
-  GLFWwindow                    *window_     = nullptr;
-  wgpu::SwapChain                swap_chain_ = {};
-
-  std::vector<wgpu::FeatureName> features_   = {};
+  wgpu::Surface   surface_    = {};
+  GLFWwindow     *window_     = nullptr;
+  wgpu::SwapChain swap_chain_ = {};
 
   /* Features and limits */
+  std::vector<wgpu::FeatureName> features_          = {};
   std::vector<wgpu::FeatureName> required_features_ = {};
+
+  wgpu::Limits                   limits_            = {};
   wgpu::RequiredLimits           required_limits_   = {};
 
   int                            width_             = 0;
