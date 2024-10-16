@@ -24,13 +24,6 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(webgpu)
 
 
-FetchContent_Declare(
-    glfw3webgpu
-    GIT_REPOSITORY https://github.com/eliemichel/glfw3webgpu
-    GIT_TAG v1.2.0
-)
-FetchContent_MakeAvailable(glfw3webgpu)
-
 # https://jonathanhamberg.com/post/2019-01-27-cmake-dependencies-fetch-content/
 FetchContent_Declare(
         glfw

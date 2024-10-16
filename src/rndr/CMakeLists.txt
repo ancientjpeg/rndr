@@ -10,6 +10,6 @@ add_subdirectory(utils)
 
 
 target_include_directories(rndr PUBLIC ${PROJECT_SOURCE_DIR}/src)
-target_link_libraries(rndr PUBLIC imgui glfw3webgpu webgpu_cpp)
+target_link_libraries(rndr PUBLIC imgui webgpu_cpp)
 
 target_compile_definitions(rndr PUBLIC RNDR_SUPPORT_DIR=\"${RNDR_SUPPORT_DIR}\")

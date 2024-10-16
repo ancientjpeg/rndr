@@ -9,9 +9,9 @@
  *
  */
 
+#include "rndr/utils/glfw_helpers.h"
 #include "rndr/utils/helpers.h"
 
-#include "glfw3webgpu.h"
 #include "globals.h"
 
 #include <cassert>
