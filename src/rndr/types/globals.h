@@ -51,7 +51,6 @@ public:
   const wgpu::Surface &getSurface();
   const std::vector<wgpu::FeatureName> &getFeatures();
   const wgpu::Queue                    &getQueue();
-  const wgpu::SwapChain                &getSwapChain();
   GLFWwindow                           *getWindow();
 
   bool                                  hasFeature(wgpu::FeatureName feature);
@@ -65,13 +64,12 @@ public:
   void         processEvents();
 
 protected:
-  wgpu::Instance  instance_   = {};
-  wgpu::Device    device_     = {};
-  wgpu::Queue     queue_      = {};
+  wgpu::Instance instance_ = {};
+  wgpu::Device   device_   = {};
+  wgpu::Queue    queue_    = {};
 
-  wgpu::Surface   surface_    = {};
-  GLFWwindow     *window_     = nullptr;
-  wgpu::SwapChain swap_chain_ = {};
+  wgpu::Surface  surface_  = {};
+  GLFWwindow    *window_   = nullptr;
 
   /* Features and limits */
   std::vector<wgpu::FeatureName> features_          = {};

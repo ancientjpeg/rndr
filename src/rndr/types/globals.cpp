@@ -22,7 +22,6 @@ namespace rndr {
 Globals::~Globals()
 {
   /* manually release wgpu surface-related assets */
-  wgpuSwapChainRelease(swap_chain_.MoveToCHandle());
   wgpuSurfaceRelease(surface_.MoveToCHandle());
 
   glfwDestroyWindow(getWindow());
@@ -137,18 +136,15 @@ Result Globals::initializeWebGPU()
 
   queue_ = getDevice().GetQueue();
 
-  /* get swap chain */
-  wgpu::SwapChainDescriptor sc_desc = {};
-  sc_desc.width                     = width_;
-  sc_desc.height                    = height_;
-  sc_desc.format                    = wgpu::TextureFormat::BGRA8Unorm;
-  sc_desc.usage                     = wgpu::TextureUsage::RenderAttachment;
-  sc_desc.presentMode               = wgpu::PresentMode::Fifo;
-  sc_desc.label                     = "Main SwapChain";
+  /* configure surface */
+  wgpu::SurfaceConfiguration surface_config;
+  surface_config.device      = device_;
+  surface_config.format      = wgpu::TextureFormat::BGRA8Unorm;
+  surface_config.width       = width_;
+  surface_config.height      = height_;
+  surface_config.presentMode = wgpu::PresentMode::Fifo;
 
-  /* @todo stop using glfw3webgpu and use our own surface descriptor to get
-   * swapchain */
-  swap_chain_ = std::move(device_.CreateSwapChain(surface_, &sc_desc));
+  surface_.Configure(&surface_config);
 
   return Result::success();
 }
@@ -169,17 +165,15 @@ Result Globals::initializeGLFW()
 
 Result Globals::initialize(int width, int height)
 {
-  width_             = width;
-  height_            = height;
+  width_  = width;
+  height_ = height;
 
-  Result glfw_result = Result::error(), wgpu_result = Result::error();
-
-  if (!(glfw_result = initializeGLFW())) {
-    return glfw_result;
+  if (auto result = initializeGLFW(); !result) {
+    return result;
   }
 
-  if (!(wgpu_result = initializeWebGPU())) {
-    return wgpu_result;
+  if (auto result = initializeWebGPU(); !result) {
+    return result;
   }
 
   initialized_ = true;
@@ -235,11 +229,6 @@ const wgpu::Device &Globals::getDevice()
 const wgpu::Queue &Globals::getQueue()
 {
   return queue_;
-}
-
-const wgpu::SwapChain &Globals::getSwapChain()
-{
-  return swap_chain_;
 }
 
 GLFWwindow *Globals::getWindow()

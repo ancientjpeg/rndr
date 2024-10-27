@@ -5,23 +5,14 @@
 #include <backends/imgui_impl_wgpu.h>
 #include <imgui.h>
 #include <iostream>
+#include <sstream>
 
 constexpr int w = 640;
 constexpr int h = 480;
 
-int           main()
+rndr::Result  performBufferCopies(rndr::Application &program_gpu)
 {
-  rndr::Application program_gpu;
-  rndr::Result      init_result = program_gpu.initialize();
-
-  if (!init_result.ok()) {
-    std::cerr << "Initialization failed for reason: " << init_result;
-    return 1;
-  }
-
-  const wgpu::Device  &device   = program_gpu.getDevice();
-
-  wgpu::RenderPipeline pipeline = rndr::createRenderPipeline(program_gpu);
+  const wgpu::Device &device = program_gpu.getDevice();
 
   /* buffer write test */
   wgpu::BufferDescriptor buffer_desc;
@@ -61,82 +52,142 @@ int           main()
   auto    cbk = [&](wgpu::MapAsyncStatus status, const char *message) {
     float *range = (float *)buffer2.GetConstMappedRange(0, 16 * sizeof(float));
     std::copy(range, range + 16, nums_out.begin());
-    std::cout << "BUFFER2 COPY SUCCESS" << std::endl;
+    bool equal = std::equal(range, range + nums.size(), nums.begin());
+    std::cout << "BUFFER2 COPY SUCCESS?:" << equal << std::endl;
     buffer2.Unmap();
   };
 
   buffer2.MapAsync(wgpu::MapMode::Read, 0, 16 * sizeof(float),
                    wgpu::CallbackMode::AllowProcessEvents, cbk);
 
+  program_gpu.processEvents();
   auto map_future = program_gpu.getSubmittedWorkFuture();
   program_gpu.blockOnFuture(map_future);
 
-  while (!glfwWindowShouldClose(program_gpu.getWindow())) {
+  buffer1.Destroy();
+  buffer2.Destroy();
 
+  return rndr::Result::success();
+}
+
+rndr::Result renderFrame(rndr::Application &program_gpu)
+{
+
+  const wgpu::Device  &device   = program_gpu.getDevice();
+
+  wgpu::RenderPipeline pipeline = rndr::createRenderPipeline(program_gpu);
+
+  /* check async ops */
+  program_gpu.processEvents();
+
+  /* get current texture to write to */
+  wgpu::SurfaceTexture surface_tex;
+  program_gpu.getSurface().GetCurrentTexture(&surface_tex);
+
+  if (surface_tex.status != wgpu::SurfaceGetCurrentTextureStatus::Success) {
+    std::ostringstream oss;
+    oss << "Surface did not provide next texture. "
+           "SurfaceGetCurrentTextureStatus:"
+        << static_cast<uint32_t>(surface_tex.status);
+    return rndr::Result::error(oss.str());
+  }
+
+  wgpu::Texture               next_tex_src = surface_tex.texture;
+  wgpu::TextureViewDescriptor next_tex_descriptor;
+
+  next_tex_descriptor.format = next_tex_src.GetFormat();
+  assert(next_tex_src.GetDimension() == wgpu::TextureDimension::e2D);
+  next_tex_descriptor.dimension = wgpu::TextureViewDimension::e2D;
+
+  wgpu::TextureView next_tex    = next_tex_src.CreateView(&next_tex_descriptor);
+
+  if (!next_tex) {
+    return rndr::Result::error("Cannot acquire next swap chain texture");
+  }
+
+  /* create the command encoder */
+  wgpu::CommandEncoderDescriptor encoder_desc = {};
+  encoder_desc.nextInChain                    = nullptr;
+  encoder_desc.label                          = "Default Command Encoder";
+  wgpu::CommandEncoder encoder = device.CreateCommandEncoder(&encoder_desc);
+
+  /* describe render pass color attachment */
+  wgpu::RenderPassColorAttachment color_attachment = {};
+  color_attachment.nextInChain                     = nullptr;
+  color_attachment.view                            = next_tex;
+  color_attachment.loadOp                          = wgpu::LoadOp::Clear;
+  color_attachment.storeOp                         = wgpu::StoreOp::Store;
+  color_attachment.clearValue                      = {0, 0, 0, 1};
+
+  /* describe render pass */
+  wgpu::RenderPassDescriptor pass_desc = {};
+  pass_desc.label                      = "Default Render Pass Encoder";
+  pass_desc.colorAttachmentCount       = 1;
+  pass_desc.colorAttachments           = &color_attachment;
+  pass_desc.timestampWrites            = nullptr;
+  pass_desc.depthStencilAttachment     = nullptr;
+
+  /* create render pass encoder */
+  wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&pass_desc);
+  pass.SetPipeline(pipeline);
+
+  /* push events to render pass encoder */
+  pass.Draw(3, 1, 0, 0);
+
+  /* finish encoding render pass */
+  pass.End();
+
+  /* describe the command buffer */
+  wgpu::CommandBufferDescriptor command_buffer_desc = {};
+  command_buffer_desc.nextInChain                   = nullptr;
+  command_buffer_desc.label                         = "Default Command buffer";
+
+  /* encode the command buffer, push to queue */
+  wgpu::CommandBuffer command_buffer = encoder.Finish(&command_buffer_desc);
+  program_gpu.getQueue().Submit(1, &command_buffer);
+
+  wgpu::Future work_future = program_gpu.getSubmittedWorkFuture();
+  /* program_gpu.blockOnFuture(work_future); */
+
+  /* finally, present the next texture */
+  program_gpu.getSurface().Present();
+
+  return rndr::Result::success();
+}
+
+int main()
+{
+  rndr::Application program_gpu;
+  rndr::Result      init_result = program_gpu.initialize();
+
+  if (!init_result.ok()) {
+    std::cerr << "Initialization failed for reason: " << init_result;
+    return 1;
+  }
+
+  rndr::Result buffer_copy_result = performBufferCopies(program_gpu);
+  if (!buffer_copy_result) {
+    std::cerr << buffer_copy_result << std::endl;
+    return 1;
+  }
+
+  rndr::Result render_result
+      = rndr::Result::error("Did not complete first frame.");
+
+  do {
+    if (glfwWindowShouldClose(program_gpu.getWindow())) {
+      render_result = rndr::Result::success("GLFW Requested Window Close");
+      break;
+    }
     // Check whether the user clicked on the close button (and any other
     // mouse/key event, which we don't use so far)
     glfwPollEvents();
 
-    /* check async ops */
-    program_gpu.processEvents();
+    render_result = renderFrame(program_gpu);
+  } while (render_result);
 
-    /* get current texture to write to */
-    wgpu::TextureView next_tex
-        = program_gpu.getSwapChain().GetCurrentTextureView();
+  auto &stream = render_result ? std::cout : std::cerr;
+  std::cout << render_result << std::endl;
 
-    if (!next_tex) {
-      std::cerr << "Cannot acquire next swap chain texture" << std::endl;
-      break;
-    }
-
-    /* create the command encoder */
-    wgpu::CommandEncoderDescriptor encoder_desc = {};
-    encoder_desc.nextInChain                    = nullptr;
-    encoder_desc.label                          = "Default Command Encoder";
-    wgpu::CommandEncoder encoder = device.CreateCommandEncoder(&encoder_desc);
-
-    /* describe render pass color attachment */
-    wgpu::RenderPassColorAttachment color_attachment = {};
-    color_attachment.nextInChain                     = nullptr;
-    color_attachment.view                            = next_tex;
-    color_attachment.loadOp                          = wgpu::LoadOp::Clear;
-    color_attachment.storeOp                         = wgpu::StoreOp::Store;
-    color_attachment.clearValue                      = {0, 0, 0, 1};
-
-    /* describe render pass */
-    wgpu::RenderPassDescriptor pass_desc = {};
-    pass_desc.label                      = "Default Render Pass Encoder";
-    pass_desc.colorAttachmentCount       = 1;
-    pass_desc.colorAttachments           = &color_attachment;
-    pass_desc.timestampWrites            = nullptr;
-    pass_desc.depthStencilAttachment     = nullptr;
-
-    /* create render pass encoder */
-    wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&pass_desc);
-    pass.SetPipeline(pipeline);
-
-    /* push events to render pass encoder */
-    pass.Draw(3, 1, 0, 0);
-
-    /* finish encoding render pass */
-    pass.End();
-
-    /* describe the command buffer */
-    wgpu::CommandBufferDescriptor command_buffer_desc = {};
-    command_buffer_desc.nextInChain                   = nullptr;
-    command_buffer_desc.label = "Default Command buffer";
-
-    /* encode the command buffer, push to queue */
-    wgpu::CommandBuffer command_buffer = encoder.Finish(&command_buffer_desc);
-    program_gpu.getQueue().Submit(1, &command_buffer);
-
-    wgpu::Future work_future = program_gpu.getSubmittedWorkFuture();
-    /* program_gpu.blockOnFuture(work_future); */
-
-    /* finally, present the next texture */
-    program_gpu.getSwapChain().Present();
-  }
-
-  buffer1.Destroy();
-  buffer2.Destroy();
+  return render_result ? 0 : 1;
 }
