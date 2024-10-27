@@ -31,12 +31,12 @@ struct Result {
 
   static Result success(std::string message = {})
   {
-    return Result(message, true);
+    return Result(true, message);
   }
 
-  static Result error(std::string message = {})
+  static Result error(std::string message)
   {
-    return Result(message, false);
+    return Result(false, message);
   }
 
   friend std::ostream &operator<<(std::ostream &os, const Result &result)
@@ -63,13 +63,13 @@ struct Result {
   }
 
 private:
-  Result(std::string message, bool success)
-      : message_(message), success_(success)
+  Result(bool success, std::string message)
+      : success_(success), message_(message)
   {
   }
 
-  std::string message_;
   bool        success_ = false;
+  std::string message_;
 };
 
 /********** Mesh Data **********/
