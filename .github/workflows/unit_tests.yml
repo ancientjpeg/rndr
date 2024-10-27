@@ -11,4 +11,6 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    run: echo "Hello, actions!"
+    steps:
+      - name: "Say hello"
+        run: echo "Hello, actions!"
