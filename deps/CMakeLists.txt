@@ -50,28 +50,3 @@ if(NOT glfw_POPULATED)
     add_subdirectory(${glfw_SOURCE_DIR} ${glfw_BINARY_DIR})
 endif()
 
-### IMGUI SETUP ###
-
-set(IMGUI_RENDERER "WebGPU")
-set(IMGUI_PLATFORM "GLFW")
-
-set(IMGUI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/imgui)
-
-set(IMGUI_SRC "${IMGUI_DIR}/imgui.cpp")
-
-set(IMGUI_INCLUDE_DIRS ${IMGUI_DIR})
-
-if (${IMGUI_RENDERER} STREQUAL "WebGPU")
-    set(IMGUI_INCLUDE_DIRS ${IMGUI_INCLUDE_DIRS} ${FETCHCONTENT_BASE_DIR}/dawn_src/include)
-    # set(IMGUI_SRC ${IMGUI_SRC} ${IMGUI_DIR}/backends/imgui_impl_wgpu.cpp)
-endif()
-
-if (${IMGUI_PLATFORM} STREQUAL "GLFW")
-    set(IMGUI_INCLUDE_DIRS ${IMGUI_INCLUDE_DIRS} ${FETCHCONTENT_BASE_DIR}/glfw_src/include)
-    # set(IMGUI_SRC ${IMGUI_SRC} ${IMGUI_DIR}/backends/imgui_impl_glfw.cpp)
-endif()
-
-
-add_library(imgui ${IMGUI_SRC})
-target_include_directories(imgui PUBLIC ${IMGUI_INCLUDE_DIRS})
-target_link_libraries(imgui glfw webgpu)
