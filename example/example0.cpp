@@ -1,9 +1,7 @@
 #include "rndr/application.h"
 #include "rndr/math/ops.h"
 #include "rndr/utils/helpers.h"
-#include <backends/imgui_impl_glfw.h>
-#include <backends/imgui_impl_wgpu.h>
-#include <imgui.h>
+#include <cassert>
 #include <iostream>
 #include <sstream>
 
