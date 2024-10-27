@@ -1,0 +1,6 @@
+name: Unit Testing CI
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    run: echo "Hello, actions!"
