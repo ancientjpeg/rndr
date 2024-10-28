@@ -12,6 +12,11 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
+      - name: DEBUG
+        run: >
+          pwd
+          ls -la
+
       - name: CMake Configure
         run: >
           cmake -Bbuild -GNinja
