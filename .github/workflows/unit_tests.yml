@@ -12,8 +12,14 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
+
+      - name: Apt Install Dependencies
+        run: |
+          sudo apt-get install -y libwayland-dev libxkbcommon-dev xorg-dev
+
       - uses: actions/checkout@v4
       - uses: seanmiddleditch/gha-setup-ninja@master
+      - uses: jwlawson/actions-setup-cmake@v2
 
       - name: CMake Configure
         run: >
