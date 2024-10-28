@@ -15,7 +15,7 @@ jobs:
 
       - name: Apt Install Dependencies
         run: |
-          sudo apt-get install -y libwayland-dev libxkbcommon-dev xorg-dev
+          sudo apt-get install libxrandr-dev libxinerama-dev libxcursor-dev mesa-common-dev libx11-xcb-dev pkg-config
 
       - name: Run sccache-cache
         uses: mozilla-actions/sccache-action@v0.0.6
