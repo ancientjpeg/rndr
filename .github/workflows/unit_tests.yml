@@ -12,5 +12,14 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - name: "Say hello"
-        run: echo "Hello, actions!"
+      - name: CMake Configure
+        run: >
+          cmake -Bbuild -GNinja
+          -DCMAKE_BUILD_TYPE Debug
+
+      - name: CMake Build Tests
+        run: cmake --build build -t tests
+
+      - name: Run Tests
+        run: build/tests/tests
+
