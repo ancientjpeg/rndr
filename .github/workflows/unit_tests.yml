@@ -12,10 +12,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - name: DEBUG
-        run: |
-          pwd
-          ls -la
+      - uses: actions/checkout@v4
 
       - name: CMake Configure
         run: >
