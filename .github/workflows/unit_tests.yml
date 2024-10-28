@@ -17,14 +17,21 @@ jobs:
         run: |
           sudo apt-get install -y libwayland-dev libxkbcommon-dev xorg-dev
 
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.6
+
       - uses: actions/checkout@v4
       - uses: seanmiddleditch/gha-setup-ninja@master
       - uses: jwlawson/actions-setup-cmake@v2
 
       - name: CMake Configure
+        env:
+          SCCACHE_GHA_ENABLED: "true"
         run: >
           cmake -Bbuild -GNinja
           -DCMAKE_BUILD_TYPE=Debug
+          -DCMAKE_C_COMPILER_LAUNCHER=sccache
+          -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
           -DWEBGPU_BACKEND=DAWN
 
       - name: CMake Build Tests
