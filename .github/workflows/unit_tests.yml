@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: DEBUG
-        run: >
+        run: |
           pwd
           ls -la
 
