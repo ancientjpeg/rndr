@@ -13,6 +13,7 @@
 #define RNDR_MATRIX_H_
 
 #include <array>
+#include <cstddef>
 #include <tuple>
 
 namespace rndr {

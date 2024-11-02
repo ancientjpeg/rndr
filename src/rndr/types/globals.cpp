@@ -15,6 +15,7 @@
 #include "globals.h"
 
 #include <cassert>
+#include <chrono>
 #include <iostream>
 
 namespace rndr {

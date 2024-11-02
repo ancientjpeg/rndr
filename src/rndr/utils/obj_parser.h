@@ -15,6 +15,7 @@
 #include "rndr/math/matrix.h"
 #include "rndr/types/types.h"
 
+#include <cstddef>
 #include <filesystem>
 #include <fstream>
 #include <map>
