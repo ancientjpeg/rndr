@@ -24,6 +24,8 @@ jobs:
           echo "SCCACHE_ENDPOINT=https://0b13f25b65dea5d733abbbaa9b689381.r2.cloudflarestorage.com" >> $GITHUB_ENV
           echo "SCCACHE_BUCKET=sccache" >> $GITHUB_ENV
           echo "SCCACHE_REGION=auto" >> $GITHUB_ENV
+          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV 
+          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
 
       - uses: mozilla-actions/sccache-action@v0.0.6
       - uses: actions/checkout@v4
