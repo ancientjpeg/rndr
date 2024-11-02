@@ -24,11 +24,13 @@ using namespace wgpu;
 Application::Application()
     : support_dir_(RNDR_SUPPORT_DIR), shader_dir_(support_dir_ / "shaders")
 {
+  /** @todo DELETE! */
+  /*
   assert(support_dir_.is_absolute() && std::filesystem::exists(support_dir_));
   assert(shader_dir_.is_absolute() && std::filesystem::exists(shader_dir_));
 
-  /** @todo DELETE! */
   collectShaderSource_(true);
+  */
 }
 
 bool Application::addShaderSource(std::filesystem::path shader_path)
