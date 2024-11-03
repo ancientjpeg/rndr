@@ -90,6 +90,11 @@ Result Globals::initializeWebGPU()
       adapter_req_callback);
   blockOnFuture(adapter_wait_future);
 
+  if (adapter_.Get() == nullptr) {
+    return Result::error("Failed to retrieve adapter");
+  }
+  std::cout << "Got adapter" << std::endl;
+
   /* Get features */
   features_.resize(adapter_.EnumerateFeatures(nullptr));
   adapter_.EnumerateFeatures(features_.data());
@@ -139,6 +144,11 @@ Result Globals::initializeWebGPU()
       });
 
   blockOnFuture(device_future);
+
+  if (device_.Get() == nullptr) {
+    return Result::error("Failed to retrieve device");
+  }
+  std::cout << "Got device" << std::endl;
 
   if (!error_msg.empty()) {
     return Result::error(error_msg);
