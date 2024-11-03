@@ -53,8 +53,20 @@ Result Globals::initializeWebGPU()
   instance_desc.features.timedWaitAnyMaxCount = 8;
   instance_                                   = CreateInstance(&instance_desc);
 
+  if (instance_.Get() == nullptr) {
+    return Result::error("Failed to retrieve instance");
+  }
+
+  std::cout << "Got instance" << std::endl;
+
   surface_
       = wgpu::Surface::Acquire(glfwGetWGPUSurface(instance_.Get(), window_));
+
+  if (surface_.Get() == nullptr) {
+    return Result::error("Failed to retrieve surface");
+  }
+
+  std::cout << "Got surface" << std::endl;
 
   /* Request adapter */
   wgpu::RequestAdapterOptions adapter_opts = {};
@@ -173,9 +185,13 @@ Result Globals::initialize(int width, int height)
     return result;
   }
 
+  std::cout << "initialized GLFW" << std::endl;
+
   if (auto result = initializeWebGPU(); !result) {
     return result;
   }
+
+  std::cout << "initialized WebGPU" << std::endl;
 
   initialized_ = true;
 
