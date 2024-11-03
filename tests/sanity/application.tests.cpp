@@ -4,10 +4,8 @@
 
 TEST_CASE("Application initializes and destructs without fault", "[sanity]")
 {
-  REQUIRE(false);
   auto         app         = std::make_unique<rndr::Application>();
   rndr::Result init_result = app->initialize();
   CHECK(init_result.ok());
   CHECK(app->isInitialized());
-  app = nullptr;
 }
