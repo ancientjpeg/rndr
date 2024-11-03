@@ -57,16 +57,12 @@ Result Globals::initializeWebGPU()
     return Result::error("Failed to retrieve instance");
   }
 
-  std::cout << "Got instance" << std::endl;
-
   surface_
       = wgpu::Surface::Acquire(glfwGetWGPUSurface(instance_.Get(), window_));
 
   if (surface_.Get() == nullptr) {
     return Result::error("Failed to retrieve surface");
   }
-
-  std::cout << "Got surface" << std::endl;
 
   /* Request adapter */
   wgpu::RequestAdapterOptions adapter_opts = {};
@@ -93,7 +89,6 @@ Result Globals::initializeWebGPU()
   if (adapter_.Get() == nullptr) {
     return Result::error("Failed to retrieve adapter");
   }
-  std::cout << "Got adapter" << std::endl;
 
   /* Get features */
   features_.resize(adapter_.EnumerateFeatures(nullptr));
@@ -148,7 +143,6 @@ Result Globals::initializeWebGPU()
   if (device_.Get() == nullptr) {
     return Result::error("Failed to retrieve device");
   }
-  std::cout << "Got device" << std::endl;
 
   if (!error_msg.empty()) {
     return Result::error(error_msg);
@@ -195,13 +189,9 @@ Result Globals::initialize(int width, int height)
     return result;
   }
 
-  std::cout << "initialized GLFW" << std::endl;
-
   if (auto result = initializeWebGPU(); !result) {
     return result;
   }
-
-  std::cout << "initialized WebGPU" << std::endl;
 
   initialized_ = true;
 
