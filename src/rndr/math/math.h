@@ -12,6 +12,7 @@
 #ifndef RNDR_MATH_H_
 #define RNDR_MATH_H_
 
+#include <cstddef>
 #include <numeric>
 
 namespace rndr {

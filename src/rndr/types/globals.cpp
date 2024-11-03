@@ -15,6 +15,7 @@
 #include "globals.h"
 
 #include <cassert>
+#include <chrono>
 #include <iostream>
 
 namespace rndr {
@@ -52,8 +53,16 @@ Result Globals::initializeWebGPU()
   instance_desc.features.timedWaitAnyMaxCount = 8;
   instance_                                   = CreateInstance(&instance_desc);
 
+  if (instance_.Get() == nullptr) {
+    return Result::error("Failed to retrieve instance");
+  }
+
   surface_
       = wgpu::Surface::Acquire(glfwGetWGPUSurface(instance_.Get(), window_));
+
+  if (surface_.Get() == nullptr) {
+    return Result::error("Failed to retrieve surface");
+  }
 
   /* Request adapter */
   wgpu::RequestAdapterOptions adapter_opts = {};
@@ -76,6 +85,10 @@ Result Globals::initializeWebGPU()
       &adapter_opts, wgpu::CallbackMode::AllowProcessEvents,
       adapter_req_callback);
   blockOnFuture(adapter_wait_future);
+
+  if (adapter_.Get() == nullptr) {
+    return Result::error("Failed to retrieve adapter");
+  }
 
   /* Get features */
   features_.resize(adapter_.EnumerateFeatures(nullptr));
@@ -126,6 +139,10 @@ Result Globals::initializeWebGPU()
       });
 
   blockOnFuture(device_future);
+
+  if (device_.Get() == nullptr) {
+    return Result::error("Failed to retrieve device");
+  }
 
   if (!error_msg.empty()) {
     return Result::error(error_msg);

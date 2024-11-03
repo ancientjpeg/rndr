@@ -13,6 +13,9 @@
 #define RNDR_MATRIX_H_
 
 #include <array>
+#include <cstddef>
+#include <cstdint>
+#include <cstring>
 #include <tuple>
 
 namespace rndr {
