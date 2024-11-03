@@ -52,6 +52,11 @@ struct Result {
     return os;
   }
 
+  std::string message()
+  {
+    return message_;
+  }
+
   bool ok() const
   {
     return success_;
