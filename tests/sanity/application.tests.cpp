@@ -2,7 +2,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <memory>
 
-TEST_CASE("Application initializes and destructs without fault")
+TEST_CASE("Application initializes and destructs without fault", "[sanity]")
 {
   REQUIRE(false);
   auto         app         = std::make_unique<rndr::Application>();
