@@ -8,7 +8,7 @@
 #ifndef RNDR_PIPELINE_BASE_H_
 #define RNDR_PIPELINE_BASE_H_
 
-#include "rndr/types/types.h"
+#include "rndr/utils/result.h"
 #include <map>
 #include <webgpu/webgpu_cpp.h>
 
@@ -18,12 +18,6 @@ enum class PipelinePriority { Static, PerFrame, PerObject, NumBindGroups };
 
 class PipelineBase {
 protected:
-  struct BufferBinding {
-    uint32_t     group;
-    uint32_t     binding;
-    wgpu::Buffer buffer;
-  };
-
   /**
    * @brief Create and add a buffer to this pipeline
    *
@@ -32,15 +26,21 @@ protected:
    * @return A `std::pair` containing the bind group and binding indices for the
    * newly created binding.
    */
-  Result createBuffer(PipelinePriority priority, uint64_t size);
+  Res<std::pair<uint32_t, uint32_t>> createBuffer(PipelinePriority priority,
+                                                  uint64_t         size);
 
 private:
-  using GroupAndBind = std::pair<uint32_t, uint32_t>;
-
   static constexpr size_t bind_group_count_
       = static_cast<size_t>(PipelinePriority::NumBindGroups);
 
-  using BindGroupMap = std::map<uint32_t, BufferBinding>;
+  struct BufferBinding {
+    uint32_t     group;
+    uint32_t     binding;
+    wgpu::Buffer buffer;
+  }
+
+  using BindGroupMap
+      = std::map<uint32_t, BufferBinding>;
 
   std::array<BindGroupMap, bind_group_count_> buffer_bindings_;
 };
