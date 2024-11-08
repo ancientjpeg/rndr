@@ -14,10 +14,24 @@
 
 namespace rndr {
 
-enum class PipelinePriority { Static, PerFrame, PerObject, NumBindGroups };
+enum class PipelinePriority {
+  Static        = 0,
+  PerFrame      = 1,
+  PerObject     = 2,
+  NumBindGroups = 3
+};
 
 class PipelineBase {
 protected:
+  struct BindingMeta {
+    uint32_t     group;
+    uint32_t     binding;
+    wgpu::Buffer buffer;
+    uint64_t     size()
+    {
+      return buffer.GetSize();
+    };
+  };
   /**
    * @brief Create and add a buffer to this pipeline
    *
@@ -26,23 +40,30 @@ protected:
    * @return A `std::pair` containing the bind group and binding indices for the
    * newly created binding.
    */
-  Res<std::pair<uint32_t, uint32_t>> createBuffer(PipelinePriority priority,
-                                                  uint64_t         size);
+  Res<BindingMeta>        createBuffer(wgpu::Device     &device,
+                                       PipelinePriority  priority,
+                                       uint64_t          size,
+                                       wgpu::BufferUsage usage
+                                       = wgpu::BufferUsage::CopyDst
+                                         | wgpu::BufferUsage::Uniform);
+
+  Res<BindingMeta>        getBuffer(uint32_t group, uint32_t binding);
+
+  static PipelinePriority getPriorityForGroup(uint32_t group)
+  {
+    return static_cast<PipelinePriority>(group);
+  }
 
 private:
   static constexpr size_t bind_group_count_
       = static_cast<size_t>(PipelinePriority::NumBindGroups);
 
-  struct BufferBinding {
-    uint32_t     group;
-    uint32_t     binding;
-    wgpu::Buffer buffer;
-  }
+  struct BindGroupMeta {
+    PipelinePriority         priority;
+    std::vector<BindingMeta> bindings;
+  };
 
-  using BindGroupMap
-      = std::map<uint32_t, BufferBinding>;
-
-  std::array<BindGroupMap, bind_group_count_> buffer_bindings_;
+  std::array<BindGroupMeta, bind_group_count_> buffer_bindings_;
 };
 
 } // namespace rndr
