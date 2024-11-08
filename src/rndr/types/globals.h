@@ -12,7 +12,7 @@
 #ifndef RNDR_GLOBALS_H_
 #define RNDR_GLOBALS_H_
 
-#include "rndr/types/types.h"
+#include "rndr/utils/result.h"
 
 #include <GLFW/glfw3.h>
 #include <vector>

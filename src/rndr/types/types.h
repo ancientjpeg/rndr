@@ -20,62 +20,6 @@
 #include <webgpu/webgpu_cpp.h>
 
 namespace rndr {
-/********* Error Type **********/
-template <typename T>
-struct is_string
-    : public std::disjunction<std::is_same<char *, std::decay_t<T>>,
-                              std::is_same<const char *, std::decay_t<T>>,
-                              std::is_same<std::string, std::decay_t<T>>> {};
-
-struct Result {
-
-  static Result success(std::string message = {})
-  {
-    return Result(true, message);
-  }
-
-  static Result error(std::string message)
-  {
-    return Result(false, message);
-  }
-
-  friend std::ostream &operator<<(std::ostream &os, const Result &result)
-  {
-    const char *msg = result.success_ ? "Succeeded" : "Failed";
-    os << msg;
-    if (!result.message_.empty()) {
-      os << " with message: " << result.message_;
-    }
-    else {
-      os << " with no message";
-    }
-    return os;
-  }
-
-  std::string message()
-  {
-    return message_;
-  }
-
-  bool ok() const
-  {
-    return success_;
-  }
-
-  operator bool() const
-  {
-    return ok();
-  }
-
-private:
-  Result(bool success, std::string message)
-      : success_(success), message_(message)
-  {
-  }
-
-  bool        success_ = false;
-  std::string message_;
-};
 
 /********** Mesh Data **********/
 struct MeshData {

@@ -65,7 +65,7 @@ rndr::Result  performBufferCopies(rndr::Application &program_gpu)
   buffer1.Destroy();
   buffer2.Destroy();
 
-  return rndr::Result::success();
+  return {};
 }
 
 rndr::Result renderFrame(rndr::Application &program_gpu)
@@ -87,7 +87,7 @@ rndr::Result renderFrame(rndr::Application &program_gpu)
     oss << "Surface did not provide next texture. "
            "SurfaceGetCurrentTextureStatus:"
         << static_cast<uint32_t>(surface_tex.status);
-    return rndr::Result::error(oss.str());
+    return rndr::Failure(oss.str());
   }
 
   wgpu::Texture               next_tex_src = surface_tex.texture;
@@ -100,7 +100,7 @@ rndr::Result renderFrame(rndr::Application &program_gpu)
   wgpu::TextureView next_tex    = next_tex_src.CreateView(&next_tex_descriptor);
 
   if (!next_tex) {
-    return rndr::Result::error("Cannot acquire next swap chain texture");
+    return rndr::Failure("Cannot acquire next swap chain texture");
   }
 
   /* create the command encoder */
@@ -150,7 +150,7 @@ rndr::Result renderFrame(rndr::Application &program_gpu)
   /* finally, present the next texture */
   program_gpu.getSurface().Present();
 
-  return rndr::Result::success();
+  return {};
 }
 
 int main()
@@ -169,12 +169,11 @@ int main()
     return 1;
   }
 
-  rndr::Result render_result
-      = rndr::Result::error("Did not complete first frame.");
+  rndr::Result render_result = rndr::Failure("Did not complete first frame.");
 
   do {
     if (glfwWindowShouldClose(program_gpu.getWindow())) {
-      render_result = rndr::Result::success("GLFW Requested Window Close");
+      render_result = {};
       break;
     }
     // Check whether the user clicked on the close button (and any other
