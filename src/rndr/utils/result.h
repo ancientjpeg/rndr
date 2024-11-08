@@ -46,12 +46,14 @@ template <typename T>
 class Res final : public ResultBase {
 
 public:
-  Res(T value) : ResultBase(true), value_({std::in_place_index_t<1>(), value})
+  using type = T;
+
+  Res(T value) : ResultBase(true), value_(std::in_place_index<1>, value)
   {
   }
 
   Res(Failure failure)
-      : ResultBase(false), value_({std::in_place_index_t<0>(), failure.msg})
+      : ResultBase(false), value_(std::in_place_index<0>, failure.msg)
   {
   }
 
@@ -62,18 +64,19 @@ public:
 
   T &operator*()
   {
-    return value_;
+    return std::get<1>(value_);
   }
 
 private:
-  using U = std::conditional_t<std::is_void_v<T>, std::monostate, T>;
-  std::variant<std::string, U> value_;
+  std::variant<std::string, T> value_;
 };
 
 template <>
 class Res<void> final : public ResultBase {
 
 public:
+  using type = void;
+
   Res() : ResultBase(true)
   {
   }
@@ -97,7 +100,7 @@ inline std::ostream &operator<<(std::ostream &os, const Res<T> &result)
   const char *msg = result.ok() ? "Succeeded" : "Failed";
   os << msg;
   const auto message = result.message();
-  if (result.ok()) {
+  if (!result.ok()) {
     if (!message.empty()) {
       os << " with message: " << message;
     }
