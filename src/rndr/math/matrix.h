@@ -240,6 +240,10 @@ using dscalar      = basic_scalar<double>;
 using iscalar      = basic_scalar<int32_t>;
 using sscalar      = basic_scalar<size_t>;
 
+/* sanity checks, TODO expand later */
+static_assert(sizeof(vec4) == 16);
+static_assert(sizeof(matrix<4, 4>) == 64);
+
 } // namespace math
 } // namespace rndr
 
