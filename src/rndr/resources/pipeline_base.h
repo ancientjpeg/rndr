@@ -9,7 +9,6 @@
 #define RNDR_PIPELINE_BASE_H_
 
 #include "ustd/expected.h"
-#include <map>
 #include <webgpu/webgpu_cpp.h>
 
 namespace rndr {
@@ -32,6 +31,7 @@ protected:
       return buffer.GetSize();
     };
   };
+
   /**
    * @brief Create and add a buffer to this pipeline
    *

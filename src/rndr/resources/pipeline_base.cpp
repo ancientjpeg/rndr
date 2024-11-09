@@ -29,7 +29,15 @@ PipelineBase::createBuffer(wgpu::Device     &device,
 
   auto        &bg_meta = buffer_bindings_[group_idx];
   uint32_t     binding = static_cast<uint32_t>(bg_meta.bindings.size());
-  // bg_meta.bindings.push_back(/*binding*/)
+
+  BindingMeta  binding_meta;
+  binding_meta.binding = binding;
+  binding_meta.group   = group_idx;
+  binding_meta.buffer  = std::move(buf);
+
+  bg_meta.bindings.push_back(binding_meta);
+
+  return std::move(binding_meta);
 }
 
 } // namespace rndr
