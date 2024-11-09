@@ -21,15 +21,23 @@ enum class PipelinePriority {
 };
 
 class PipelineBase {
+public:
+  /**
+   * @brief Commits this pipeline layout and creates its resources on the GPU
+   */
+  ustd::result commit(wgpu::Device &device);
+
 protected:
+  struct BindingIdentifier {
+    uint32_t group;
+    uint32_t binding;
+  };
+
   struct BindingMeta {
-    uint32_t     group;
-    uint32_t     binding;
-    wgpu::Buffer buffer;
-    uint64_t     size()
-    {
-      return buffer.GetSize();
-    };
+    PipelinePriority  priority;
+    uint64_t          size;
+    wgpu::BufferUsage usage
+        = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Uniform;
   };
 
   /**
@@ -40,30 +48,32 @@ protected:
    * @return A `std::pair` containing the bind group and binding indices for the
    * newly created binding.
    */
-  ustd::expected<BindingMeta> createBuffer(wgpu::Device     &device,
-                                           PipelinePriority  priority,
-                                           uint64_t          size,
-                                           wgpu::BufferUsage usage
-                                           = wgpu::BufferUsage::CopyDst
-                                             | wgpu::BufferUsage::Uniform);
+  ustd::expected<BindingIdentifier> createBuffer(BindingMeta meta);
 
-  ustd::expected<BindingMeta> getBuffer(uint32_t group, uint32_t binding);
+  ustd::expected<wgpu::Buffer>      getBuffer(uint32_t group, uint32_t binding);
 
-  static PipelinePriority     getPriorityForGroup(uint32_t group)
+  static PipelinePriority           getPriorityForGroup(uint32_t group)
   {
     return static_cast<PipelinePriority>(group);
   }
 
 private:
+  struct BindingData {
+    BindingIdentifier identifier;
+    BindingMeta       meta;
+    wgpu::Buffer      buffer;
+  };
+
+  struct BindGroupData {
+    std::vector<BindingData> bindings;
+    wgpu::BindGroupLayout    bind_group_layout;
+    wgpu::BindGroup          bind_group;
+  };
+
   static constexpr size_t bind_group_count_
       = static_cast<size_t>(PipelinePriority::NumBindGroups);
 
-  struct BindGroupMeta {
-    PipelinePriority         priority;
-    std::vector<BindingMeta> bindings;
-  };
-
-  std::array<BindGroupMeta, bind_group_count_> buffer_bindings_;
+  std::array<BindGroupData, bind_group_count_> bind_groups_metadata;
 };
 
 } // namespace rndr
