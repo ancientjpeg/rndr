@@ -10,7 +10,6 @@
 
 #include <iostream>
 #include <string>
-inline std::variant<bool, bool> v;
 
 namespace rndr {
 struct unexpected {
