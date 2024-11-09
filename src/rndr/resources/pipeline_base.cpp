@@ -9,7 +9,7 @@
 
 namespace rndr {
 
-Res<PipelineBase::BindingMeta>
+ustd::expected<PipelineBase::BindingMeta>
 PipelineBase::createBuffer(wgpu::Device     &device,
                            PipelinePriority  priority,
                            uint64_t          size,
@@ -17,7 +17,8 @@ PipelineBase::createBuffer(wgpu::Device     &device,
 {
   size_t group_idx = static_cast<size_t>(priority);
   if (group_idx > buffer_bindings_.size()) {
-    return Failure("Group index out of range: " + std::to_string(group_idx));
+    return ustd::unexpected("Group index out of range: "
+                            + std::to_string(group_idx));
   }
 
   wgpu::BufferDescriptor bfd;
@@ -28,7 +29,7 @@ PipelineBase::createBuffer(wgpu::Device     &device,
 
   auto        &bg_meta = buffer_bindings_[group_idx];
   uint32_t     binding = static_cast<uint32_t>(bg_meta.bindings.size());
-  bg_meta.bindings.push_back(/*binding*/)
+  // bg_meta.bindings.push_back(/*binding*/)
 }
 
 } // namespace rndr

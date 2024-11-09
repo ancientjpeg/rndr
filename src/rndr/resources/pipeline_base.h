@@ -8,7 +8,7 @@
 #ifndef RNDR_PIPELINE_BASE_H_
 #define RNDR_PIPELINE_BASE_H_
 
-#include "rndr/utils/result.h"
+#include "ustd/expected.h"
 #include <map>
 #include <webgpu/webgpu_cpp.h>
 
@@ -40,16 +40,16 @@ protected:
    * @return A `std::pair` containing the bind group and binding indices for the
    * newly created binding.
    */
-  Res<BindingMeta>        createBuffer(wgpu::Device     &device,
-                                       PipelinePriority  priority,
-                                       uint64_t          size,
-                                       wgpu::BufferUsage usage
-                                       = wgpu::BufferUsage::CopyDst
-                                         | wgpu::BufferUsage::Uniform);
+  ustd::expected<BindingMeta> createBuffer(wgpu::Device     &device,
+                                           PipelinePriority  priority,
+                                           uint64_t          size,
+                                           wgpu::BufferUsage usage
+                                           = wgpu::BufferUsage::CopyDst
+                                             | wgpu::BufferUsage::Uniform);
 
-  Res<BindingMeta>        getBuffer(uint32_t group, uint32_t binding);
+  ustd::expected<BindingMeta> getBuffer(uint32_t group, uint32_t binding);
 
-  static PipelinePriority getPriorityForGroup(uint32_t group)
+  static PipelinePriority     getPriorityForGroup(uint32_t group)
   {
     return static_cast<PipelinePriority>(group);
   }
