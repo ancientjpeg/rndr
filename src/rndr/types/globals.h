@@ -12,7 +12,7 @@
 #ifndef RNDR_GLOBALS_H_
 #define RNDR_GLOBALS_H_
 
-#include "rndr/types/types.h"
+#include "ustd/expected.h"
 
 #include <GLFW/glfw3.h>
 #include <vector>
@@ -43,12 +43,12 @@ public:
    * @param width Initial width of the screen, in pixels
    * @param height Initial height of the screen, in pixels
    */
-  [[nodiscard]] Result initialize(int width = 640, int height = 480);
-  bool                 isInitialized();
+  [[nodiscard]] ustd::result initialize(int width = 640, int height = 480);
+  bool                       isInitialized();
 
-  const wgpu::Device  &getDevice();
-  const wgpu::Limits  &getLimits();
-  const wgpu::Surface &getSurface();
+  const wgpu::Device        &getDevice();
+  const wgpu::Limits        &getLimits();
+  const wgpu::Surface       &getSurface();
   const std::vector<wgpu::FeatureName> &getFeatures();
   const wgpu::Queue                    &getQueue();
   GLFWwindow                           *getWindow();
@@ -82,10 +82,10 @@ protected:
   int                            height_            = 0;
 
 private:
-  Result initializeWebGPU();
-  Result initializeGLFW();
+  ustd::result initializeWebGPU();
+  ustd::result initializeGLFW();
 
-  bool   initialized_ = false;
+  bool         initialized_ = false;
 };
 
 class GlobalAccess {

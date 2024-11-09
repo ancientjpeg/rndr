@@ -8,7 +8,7 @@
 constexpr int w = 640;
 constexpr int h = 480;
 
-rndr::Result  performBufferCopies(rndr::Application &program_gpu)
+ustd::result  performBufferCopies(rndr::Application &program_gpu)
 {
   const wgpu::Device &device = program_gpu.getDevice();
 
@@ -65,10 +65,10 @@ rndr::Result  performBufferCopies(rndr::Application &program_gpu)
   buffer1.Destroy();
   buffer2.Destroy();
 
-  return rndr::Result::success();
+  return {};
 }
 
-rndr::Result renderFrame(rndr::Application &program_gpu)
+ustd::result renderFrame(rndr::Application &program_gpu)
 {
 
   const wgpu::Device  &device   = program_gpu.getDevice();
@@ -87,7 +87,7 @@ rndr::Result renderFrame(rndr::Application &program_gpu)
     oss << "Surface did not provide next texture. "
            "SurfaceGetCurrentTextureStatus:"
         << static_cast<uint32_t>(surface_tex.status);
-    return rndr::Result::error(oss.str());
+    return ustd::unexpected(oss.str());
   }
 
   wgpu::Texture               next_tex_src = surface_tex.texture;
@@ -100,7 +100,7 @@ rndr::Result renderFrame(rndr::Application &program_gpu)
   wgpu::TextureView next_tex    = next_tex_src.CreateView(&next_tex_descriptor);
 
   if (!next_tex) {
-    return rndr::Result::error("Cannot acquire next swap chain texture");
+    return ustd::unexpected("Cannot acquire next swap chain texture");
   }
 
   /* create the command encoder */
@@ -150,31 +150,31 @@ rndr::Result renderFrame(rndr::Application &program_gpu)
   /* finally, present the next texture */
   program_gpu.getSurface().Present();
 
-  return rndr::Result::success();
+  return {};
 }
 
 int main()
 {
   rndr::Application program_gpu;
-  rndr::Result      init_result = program_gpu.initialize();
+  ustd::result      init_result = program_gpu.initialize();
 
   if (!init_result.ok()) {
     std::cerr << "Initialization failed for reason: " << init_result;
     return 1;
   }
 
-  rndr::Result buffer_copy_result = performBufferCopies(program_gpu);
+  ustd::result buffer_copy_result = performBufferCopies(program_gpu);
   if (!buffer_copy_result) {
     std::cerr << buffer_copy_result << std::endl;
     return 1;
   }
 
-  rndr::Result render_result
-      = rndr::Result::error("Did not complete first frame.");
+  ustd::result render_result
+      = ustd::unexpected("Did not complete first frame.");
 
   do {
     if (glfwWindowShouldClose(program_gpu.getWindow())) {
-      render_result = rndr::Result::success("GLFW Requested Window Close");
+      render_result = {};
       break;
     }
     // Check whether the user clicked on the close button (and any other
