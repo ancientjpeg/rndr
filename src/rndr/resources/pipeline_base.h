@@ -2,7 +2,7 @@
  * @file pipeline_base.h
  * @author Jackson Kaplan (jackson@minimal.audio)
  * @date 2024-11-07
- * Copyright © 2024 Minimal. All rights reserved.
+ * Copyright (c) 2024. All rights reserved.
  */
 
 #ifndef RNDR_PIPELINE_BASE_H_
