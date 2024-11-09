@@ -46,7 +46,7 @@ void Globals::setRequiredLimits(wgpu::Limits required_limits)
   required_limits_.limits = std::move(required_limits);
 }
 
-Result Globals::initializeWebGPU()
+result Globals::initializeWebGPU()
 {
   wgpu::InstanceDescriptor instance_desc      = {};
   instance_desc.features.timedWaitAnyEnable   = true;
@@ -54,14 +54,14 @@ Result Globals::initializeWebGPU()
   instance_                                   = CreateInstance(&instance_desc);
 
   if (instance_.Get() == nullptr) {
-    return Failure("Failed to retrieve instance");
+    return unexpected("Failed to retrieve instance");
   }
 
   surface_
       = wgpu::Surface::Acquire(glfwGetWGPUSurface(instance_.Get(), window_));
 
   if (surface_.Get() == nullptr) {
-    return Failure("Failed to retrieve surface");
+    return unexpected("Failed to retrieve surface");
   }
 
   /* Request adapter */
@@ -87,7 +87,7 @@ Result Globals::initializeWebGPU()
   blockOnFuture(adapter_wait_future);
 
   if (adapter_.Get() == nullptr) {
-    return Failure("Failed to retrieve adapter");
+    return unexpected("Failed to retrieve adapter");
   }
 
   /* Get features */
@@ -100,8 +100,8 @@ Result Globals::initializeWebGPU()
   for (wgpu::FeatureName feature : required_features_) {
     if (std::find(features_.begin(), features_.end(), feature)
         == features_.end()) {
-      return Failure("Feature with code" + std::to_string((int)feature)
-                     + "unavailable");
+      return unexpected("Feature with code" + std::to_string((int)feature)
+                        + "unavailable");
     }
   }
 
@@ -111,7 +111,7 @@ Result Globals::initializeWebGPU()
 
   if (!helpers::limits_supported(supported_limits.limits,
                                  required_limits_.limits)) {
-    return Failure("Cannot support required limits");
+    return unexpected("Cannot support required limits");
   }
 
   /* Request device */
@@ -141,11 +141,11 @@ Result Globals::initializeWebGPU()
   blockOnFuture(device_future);
 
   if (device_.Get() == nullptr) {
-    return Failure("Failed to retrieve device");
+    return unexpected("Failed to retrieve device");
   }
 
   if (!error_msg.empty()) {
-    return Failure(error_msg);
+    return unexpected(error_msg);
   }
 
   /* set default callbacks */
@@ -166,7 +166,7 @@ Result Globals::initializeWebGPU()
   return {};
 }
 
-Result Globals::initializeGLFW()
+result Globals::initializeGLFW()
 {
   /* GLFW init */
   glfwInitHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -174,13 +174,13 @@ Result Globals::initializeGLFW()
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
   window_ = glfwCreateWindow(width_, height_, "RNDR", nullptr, nullptr);
   if (window_ == nullptr) {
-    return Failure("Failed to create GLFW window");
+    return unexpected("Failed to create GLFW window");
   }
 
   return {};
 }
 
-Result Globals::initialize(int width, int height)
+result Globals::initialize(int width, int height)
 {
   width_  = width;
   height_ = height;

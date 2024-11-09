@@ -22,7 +22,7 @@ TEST_CASE("Result Compiles And Behaves As Expected")
 
   SECTION("Successful Results Give Expected Message")
   {
-    Res double_res(5.);
+    expected double_res(5.);
 
     /* quickly check type inference is working properly */
     static_assert(std::is_same_v<double, decltype(double_res)::type>);
@@ -33,10 +33,10 @@ TEST_CASE("Result Compiles And Behaves As Expected")
 
   SECTION("Void Results Behave As Expected")
   {
-    auto void_success = Result{};
+    auto void_success = result{};
     CHECK(void_success.ok());
 
-    Result void_failure = Failure(fail_msg);
+    result void_failure = unexpected(fail_msg);
     CHECK(!void_failure.ok());
     CHECK(void_failure.message() == fail_msg);
 
@@ -46,10 +46,10 @@ TEST_CASE("Result Compiles And Behaves As Expected")
 
   SECTION("String Results Behave As Expected")
   {
-    auto string_success = Res(std::string("What!"));
+    auto string_success = expected(std::string("What!"));
     CHECK(*string_success == "What!");
 
-    decltype(string_success) string_failure = Failure("Failed!");
+    decltype(string_success) string_failure = unexpected("Failed!");
     CHECK_THROWS_AS(*string_failure, std::bad_variant_access);
     CHECK(string_failure.message() == fail_msg);
 
@@ -59,10 +59,10 @@ TEST_CASE("Result Compiles And Behaves As Expected")
 
   SECTION("Int Results Behave As Expected")
   {
-    auto int_success = Res(5);
+    auto int_success = expected(5);
     CHECK(*int_success == 5);
 
-    decltype(int_success) int_failure = Failure("Failed!");
+    decltype(int_success) int_failure = unexpected("Failed!");
     CHECK_THROWS_AS(*int_failure, std::bad_variant_access);
     CHECK(int_failure.message() == fail_msg);
 

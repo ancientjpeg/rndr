@@ -13,8 +13,8 @@
 inline std::variant<bool, bool> v;
 
 namespace rndr {
-struct Failure {
-  Failure(std::string message) : msg(message)
+struct unexpected {
+  unexpected(std::string message) : msg(message)
   {
   }
   std::string msg;
@@ -43,16 +43,16 @@ protected:
 };
 
 template <typename T>
-class Res final : public ResultBase {
+class expected final : public ResultBase {
 
 public:
   using type = T;
 
-  Res(T value) : ResultBase(true), value_(std::in_place_index<1>, value)
+  expected(T value) : ResultBase(true), value_(std::in_place_index<1>, value)
   {
   }
 
-  Res(Failure failure)
+  expected(unexpected failure)
       : ResultBase(false), value_(std::in_place_index<0>, failure.msg)
   {
   }
@@ -72,16 +72,16 @@ private:
 };
 
 template <>
-class Res<void> final : public ResultBase {
+class expected<void> final : public ResultBase {
 
 public:
   using type = void;
 
-  Res() : ResultBase(true)
+  expected() : ResultBase(true)
   {
   }
 
-  Res(Failure failure) : ResultBase(false), message_(failure.msg)
+  expected(unexpected failure) : ResultBase(false), message_(failure.msg)
   {
   }
 
@@ -95,7 +95,7 @@ private:
 };
 
 template <typename T>
-inline std::ostream &operator<<(std::ostream &os, const Res<T> &result)
+inline std::ostream &operator<<(std::ostream &os, const expected<T> &result)
 {
   const char *msg = result.ok() ? "Succeeded" : "Failed";
   os << msg;
@@ -111,7 +111,7 @@ inline std::ostream &operator<<(std::ostream &os, const Res<T> &result)
   return os;
 }
 
-using Result = Res<void>;
+using result = expected<void>;
 
 } // namespace rndr
 #endif

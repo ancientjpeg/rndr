@@ -43,7 +43,7 @@ public:
    * @param width Initial width of the screen, in pixels
    * @param height Initial height of the screen, in pixels
    */
-  [[nodiscard]] Result initialize(int width = 640, int height = 480);
+  [[nodiscard]] result initialize(int width = 640, int height = 480);
   bool                 isInitialized();
 
   const wgpu::Device  &getDevice();
@@ -82,8 +82,8 @@ protected:
   int                            height_            = 0;
 
 private:
-  Result initializeWebGPU();
-  Result initializeGLFW();
+  result initializeWebGPU();
+  result initializeGLFW();
 
   bool   initialized_ = false;
 };
