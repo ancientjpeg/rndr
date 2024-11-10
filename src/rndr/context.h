@@ -1,5 +1,5 @@
 /**
- * @file globals.h
+ * @file context.h
  * @author Jackson Wyatt Kaplan (JwyattK@gmail.com)
  * @brief
  * @version 0.1
@@ -9,8 +9,8 @@
  *
  */
 
-#ifndef RNDR_GLOBALS_H_
-#define RNDR_GLOBALS_H_
+#ifndef RNDR_CONTEXT_H_
+#define RNDR_CONTEXT_H_
 
 #include "ustd/expected.h"
 
@@ -66,12 +66,12 @@ public:
   void         processEvents();
 
 protected:
-  wgpu::Instance instance_ = {};
-  wgpu::Device   device_   = {};
-  wgpu::Queue    queue_    = {};
+  wgpu::Instance               instance_ = {};
+  wgpu::Device                 device_   = {};
+  wgpu::Queue                  queue_    = {};
 
-  wgpu::Surface  surface_  = {};
-  GLFWwindow    *window_   = nullptr;
+  std::optional<wgpu::Surface> surface_  = {};
+  GLFWwindow                  *window_   = nullptr;
 
   /* Features and limits */
   std::vector<wgpu::FeatureName> features_          = {};

@@ -1,5 +1,5 @@
 /**
- * @file globals.h
+ * @file context.cpp
  * @author Jackson Wyatt Kaplan (JwyattK@gmail.com)
  * @brief
  * @version 0.1
@@ -11,8 +11,8 @@
 
 #include "rndr/utils/helpers.h"
 
+#include "context.h"
 #include "glfw3webgpu.h"
-#include "globals.h"
 
 #include <cassert>
 #include <chrono>
@@ -27,7 +27,7 @@ Globals::Globals(bool uses_surface) : uses_surface_(uses_surface)
 Globals::~Globals()
 {
   /* manually release wgpu surface-related assets */
-  wgpuSurfaceRelease(surface_.MoveToCHandle());
+  wgpuSurfaceRelease(surface_->MoveToCHandle());
 
   glfwDestroyWindow(getWindow());
   glfwTerminate();
@@ -61,17 +61,19 @@ ustd::result Globals::initializeWebGPU()
     return ustd::unexpected("Failed to retrieve instance");
   }
 
-  surface_
-      = wgpu::Surface::Acquire(glfwGetWGPUSurface(instance_.Get(), window_));
+  if (uses_surface_) {
+    surface_
+        = wgpu::Surface::Acquire(glfwGetWGPUSurface(instance_.Get(), window_));
 
-  if (surface_.Get() == nullptr) {
-    return ustd::unexpected("Failed to retrieve surface");
+    if (surface_->Get() == nullptr) {
+      return ustd::unexpected("Failed to retrieve surface");
+    }
   }
 
   /* Request adapter */
   wgpu::RequestAdapterOptions adapter_opts = {};
   adapter_opts.powerPreference   = wgpu::PowerPreference::HighPerformance;
-  adapter_opts.compatibleSurface = surface_;
+  adapter_opts.compatibleSurface = surface_ ? *surface_ : nullptr;
 
   wgpu::Adapter adapter_;
 
@@ -165,7 +167,9 @@ ustd::result Globals::initializeWebGPU()
   surface_config.height      = height_;
   surface_config.presentMode = wgpu::PresentMode::Fifo;
 
-  surface_.Configure(&surface_config);
+  if (uses_surface_) {
+    surface_->Configure(&surface_config);
+  }
 
   return {};
 }
@@ -267,7 +271,7 @@ const ustd::expected<wgpu::Surface> Globals::getSurface()
   if (!uses_surface_) {
     return ustd::unexpected("Context was not configured to use a surface.");
   }
-  return surface_;
+  return *surface_;
 }
 
 const std::vector<wgpu::FeatureName> &Globals::getFeatures()

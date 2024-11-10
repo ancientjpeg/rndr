@@ -13,7 +13,7 @@
 #define RNDR_MATERIAL_H_
 
 #include "renderable_mesh.h"
-#include "rndr/types/globals.h"
+#include "rndr/context.h"
 
 namespace rndr {
 
