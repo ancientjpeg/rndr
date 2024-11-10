@@ -19,7 +19,7 @@ namespace rndr {
 
 class Material : public GlobalAccess {
 
-  Material(Globals &globals);
+  Material(Context &globals);
 
   Material(const Material &)            = delete;
   Material &operator=(const Material &) = delete;

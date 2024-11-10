@@ -20,11 +20,11 @@
 
 namespace rndr {
 
-Globals::Globals(bool uses_surface) : uses_surface_(uses_surface)
+Context::Context(bool uses_surface) : uses_surface_(uses_surface)
 {
 }
 
-Globals::~Globals()
+Context::~Context()
 {
   /* manually release wgpu surface-related assets */
   wgpuSurfaceRelease(surface_->MoveToCHandle());
@@ -39,18 +39,18 @@ Globals::~Globals()
 }
 
 /* PRE-INIT SETTERS */
-void Globals::setRequiredFeatures(
+void Context::setRequiredFeatures(
     std::vector<wgpu::FeatureName> required_features)
 {
   required_features_ = std::move(required_features);
 }
 
-void Globals::setRequiredLimits(wgpu::Limits required_limits)
+void Context::setRequiredLimits(wgpu::Limits required_limits)
 {
   required_limits_.limits = std::move(required_limits);
 }
 
-ustd::result Globals::initializeWebGPU()
+ustd::result Context::initializeWebGPU()
 {
   wgpu::InstanceDescriptor instance_desc      = {};
   instance_desc.features.timedWaitAnyEnable   = true;
@@ -174,7 +174,7 @@ ustd::result Globals::initializeWebGPU()
   return {};
 }
 
-ustd::result Globals::initializeGLFW()
+ustd::result Context::initializeGLFW()
 {
   /* GLFW init */
   glfwInitHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -188,7 +188,7 @@ ustd::result Globals::initializeGLFW()
   return {};
 }
 
-ustd::result Globals::initialize(int width, int height)
+ustd::result Context::initialize(int width, int height)
 {
   width_  = width;
   height_ = height;
@@ -206,7 +206,7 @@ ustd::result Globals::initialize(int width, int height)
   return {};
 }
 
-bool Globals::blockOnFuture(wgpu::Future future)
+bool Context::blockOnFuture(wgpu::Future future)
 {
   assert(instance_.Get() != nullptr);
   constexpr auto       timeout    = std::chrono::milliseconds(100);
@@ -219,7 +219,7 @@ bool Globals::blockOnFuture(wgpu::Future future)
   return wait_info.completed && wait_success;
 }
 
-wgpu::Future Globals::getSubmittedWorkFuture()
+wgpu::Future Context::getSubmittedWorkFuture()
 {
   assert(isInitialized());
   wgpu::Future future = getQueue().OnSubmittedWorkDone(
@@ -231,42 +231,42 @@ wgpu::Future Globals::getSubmittedWorkFuture()
   return future;
 }
 
-void Globals::blockOnSubmittedWork()
+void Context::blockOnSubmittedWork()
 {
   blockOnFuture(getSubmittedWorkFuture());
 }
 
-void Globals::processEvents()
+void Context::processEvents()
 {
   instance_.ProcessEvents();
 }
 
-bool Globals::isInitialized()
+bool Context::isInitialized()
 {
   return initialized_;
 }
 
-const wgpu::Device &Globals::getDevice()
+const wgpu::Device &Context::getDevice()
 {
   return device_;
 }
 
-const wgpu::Queue &Globals::getQueue()
+const wgpu::Queue &Context::getQueue()
 {
   return queue_;
 }
 
-GLFWwindow *Globals::getWindow()
+GLFWwindow *Context::getWindow()
 {
   return window_;
 }
 
-const wgpu::Limits &Globals::getLimits()
+const wgpu::Limits &Context::getLimits()
 {
   return limits_;
 }
 
-const ustd::expected<wgpu::Surface> Globals::getSurface()
+const ustd::expected<wgpu::Surface> Context::getSurface()
 {
   if (!uses_surface_) {
     return ustd::unexpected("Context was not configured to use a surface.");
@@ -274,12 +274,12 @@ const ustd::expected<wgpu::Surface> Globals::getSurface()
   return *surface_;
 }
 
-const std::vector<wgpu::FeatureName> &Globals::getFeatures()
+const std::vector<wgpu::FeatureName> &Context::getFeatures()
 {
   return features_;
 }
 
-bool Globals::hasFeature(wgpu::FeatureName feature)
+bool Context::hasFeature(wgpu::FeatureName feature)
 {
   return std::find(features_.begin(), features_.end(), feature)
          != features_.end();

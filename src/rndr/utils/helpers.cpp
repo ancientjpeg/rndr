@@ -107,7 +107,7 @@ wgpu::Device requestWGPUDevice(wgpu::Adapter adapter)
   return std::move(udata.device);
 }
 
-wgpu::RenderPipeline createRenderPipeline(Globals &globals)
+wgpu::RenderPipeline createRenderPipeline(Context &globals)
 {
 
   const char *shaderSource = R"(

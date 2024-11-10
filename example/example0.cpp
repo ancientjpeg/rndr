@@ -8,7 +8,7 @@
 constexpr int w = 640;
 constexpr int h = 480;
 
-ustd::result  performBufferCopies(rndr::Globals &program_gpu)
+ustd::result  performBufferCopies(rndr::Context &program_gpu)
 {
   const wgpu::Device &device = program_gpu.getDevice();
 
@@ -68,7 +68,7 @@ ustd::result  performBufferCopies(rndr::Globals &program_gpu)
   return {};
 }
 
-ustd::result renderFrame(rndr::Globals &program_gpu)
+ustd::result renderFrame(rndr::Context &program_gpu)
 {
 
   const wgpu::Device  &device   = program_gpu.getDevice();
@@ -162,7 +162,7 @@ ustd::result renderFrame(rndr::Globals &program_gpu)
 
 int main()
 {
-  rndr::Globals program_gpu;
+  rndr::Context program_gpu;
   ustd::result  init_result = program_gpu.initialize();
 
   if (!init_result.ok()) {

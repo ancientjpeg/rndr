@@ -1,3 +1,3 @@
 target_sources(tests PRIVATE
-  application.tests.cpp
+  context.tests.cpp
 )

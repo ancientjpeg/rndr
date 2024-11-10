@@ -20,16 +20,16 @@
 
 namespace rndr {
 
-class Globals {
+class Context {
 public:
   /**
    * @brief Set the required features. Call this before a call to `initialize`.
    */
   void setRequiredFeatures(std::vector<wgpu::FeatureName> required_features);
 
-  Globals(bool uses_surface = true);
+  Context(bool uses_surface = true);
 
-  virtual ~Globals();
+  virtual ~Context();
 
   /**
    * @brief Set the required limits. Call this before a call to `initialize`.
@@ -94,12 +94,12 @@ private:
 class GlobalAccess {
 
 public:
-  GlobalAccess(Globals &globals) : globals_(globals)
+  GlobalAccess(Context &globals) : globals_(globals)
   {
   }
 
 protected:
-  Globals &getGlobals()
+  Context &getGlobals()
   {
     return globals_;
   }
@@ -110,7 +110,7 @@ protected:
   }
 
 private:
-  Globals &globals_;
+  Context &globals_;
 };
 
 } // namespace rndr
