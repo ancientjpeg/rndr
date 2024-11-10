@@ -19,7 +19,7 @@
 
 namespace rndr {
 
-wgpu::RenderPipeline createRenderPipeline(Context &globals);
+wgpu::RenderPipeline createRenderPipeline(Context &context);
 
 namespace helpers {
 

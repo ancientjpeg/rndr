@@ -27,7 +27,9 @@ Context::Context(bool uses_surface) : uses_surface_(uses_surface)
 Context::~Context()
 {
   /* manually release wgpu surface-related assets */
-  wgpuSurfaceRelease(surface_->MoveToCHandle());
+  if (surface_) {
+    wgpuSurfaceRelease(surface_->MoveToCHandle());
+  }
 
   glfwDestroyWindow(getWindow());
   glfwTerminate();

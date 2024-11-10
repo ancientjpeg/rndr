@@ -107,7 +107,7 @@ wgpu::Device requestWGPUDevice(wgpu::Adapter adapter)
   return std::move(udata.device);
 }
 
-wgpu::RenderPipeline createRenderPipeline(Context &globals)
+wgpu::RenderPipeline createRenderPipeline(Context &context)
 {
 
   const char *shaderSource = R"(
@@ -141,7 +141,7 @@ fn fs_main() -> @location(0) vec4<f32> {
   shader_module_desc.label                        = "Default Shader Module";
   shader_module_desc.nextInChain                  = &shader_code_desc;
   wgpu::ShaderModule shader_module
-      = globals.getDevice().CreateShaderModule(&shader_module_desc);
+      = context.getDevice().CreateShaderModule(&shader_module_desc);
 
   wgpu::RenderPipelineDescriptor pipeline_desc = {};
   pipeline_desc.nextInChain                    = nullptr;
@@ -196,7 +196,7 @@ fn fs_main() -> @location(0) vec4<f32> {
   pipeline_desc.layout = nullptr;
 
   wgpu::RenderPipeline ret
-      = globals.getDevice().CreateRenderPipeline(&pipeline_desc);
+      = context.getDevice().CreateRenderPipeline(&pipeline_desc);
 
   return ret;
 }

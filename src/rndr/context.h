@@ -94,23 +94,23 @@ private:
 class GlobalAccess {
 
 public:
-  GlobalAccess(Context &globals) : globals_(globals)
+  GlobalAccess(Context &context) : context_(context)
   {
   }
 
 protected:
-  Context &getGlobals()
+  Context &getContext()
   {
-    return globals_;
+    return context_;
   }
 
   const wgpu::Device &getDevice()
   {
-    return globals_.getDevice();
+    return context_.getDevice();
   }
 
 private:
-  Context &globals_;
+  Context &context_;
 };
 
 } // namespace rndr
