@@ -27,6 +27,8 @@ public:
    */
   void setRequiredFeatures(std::vector<wgpu::FeatureName> required_features);
 
+  Globals(bool uses_surface = true);
+
   virtual ~Globals();
 
   /**
@@ -48,7 +50,7 @@ public:
 
   const wgpu::Device        &getDevice();
   const wgpu::Limits        &getLimits();
-  const wgpu::Surface       &getSurface();
+  const ustd::expected<wgpu::Surface>   getSurface();
   const std::vector<wgpu::FeatureName> &getFeatures();
   const wgpu::Queue                    &getQueue();
   GLFWwindow                           *getWindow();
@@ -85,6 +87,7 @@ private:
   ustd::result initializeWebGPU();
   ustd::result initializeGLFW();
 
+  const bool   uses_surface_;
   bool         initialized_ = false;
 };
 

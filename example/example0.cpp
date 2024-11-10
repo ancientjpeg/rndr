@@ -79,8 +79,15 @@ ustd::result renderFrame(rndr::Application &program_gpu)
   program_gpu.processEvents();
 
   /* get current texture to write to */
+  auto surface_optional = program_gpu.getSurface();
+  if (!surface_optional) {
+    return ustd::unexpected(surface_optional.message());
+  }
+
+  const wgpu::Surface &surface = *surface_optional;
+
   wgpu::SurfaceTexture surface_tex;
-  program_gpu.getSurface().GetCurrentTexture(&surface_tex);
+  surface.GetCurrentTexture(&surface_tex);
 
   if (surface_tex.status != wgpu::SurfaceGetCurrentTextureStatus::Success) {
     std::ostringstream oss;
@@ -148,7 +155,7 @@ ustd::result renderFrame(rndr::Application &program_gpu)
   /* program_gpu.blockOnFuture(work_future); */
 
   /* finally, present the next texture */
-  program_gpu.getSurface().Present();
+  surface.Present();
 
   return {};
 }

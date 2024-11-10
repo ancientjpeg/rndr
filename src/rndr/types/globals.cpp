@@ -20,6 +20,10 @@
 
 namespace rndr {
 
+Globals::Globals(bool uses_surface) : uses_surface_(uses_surface)
+{
+}
+
 Globals::~Globals()
 {
   /* manually release wgpu surface-related assets */
@@ -258,8 +262,11 @@ const wgpu::Limits &Globals::getLimits()
   return limits_;
 }
 
-const wgpu::Surface &Globals::getSurface()
+const ustd::expected<wgpu::Surface> Globals::getSurface()
 {
+  if (!uses_surface_) {
+    return ustd::unexpected("Context was not configured to use a surface.");
+  }
   return surface_;
 }
 
