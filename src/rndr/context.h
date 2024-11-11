@@ -15,6 +15,7 @@
 #include "ustd/expected.h"
 
 #include <GLFW/glfw3.h>
+#include <optional>
 #include <vector>
 #include <webgpu/webgpu_cpp.h>
 
