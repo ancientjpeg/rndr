@@ -1,4 +1,4 @@
-#include "rndr/application.h"
+#include "rndr/context.h"
 #include "rndr/math/ops.h"
 #include "rndr/utils/helpers.h"
 #include <cassert>
@@ -8,7 +8,7 @@
 constexpr int w = 640;
 constexpr int h = 480;
 
-ustd::result  performBufferCopies(rndr::Application &program_gpu)
+ustd::result  performBufferCopies(rndr::Context &program_gpu)
 {
   const wgpu::Device &device = program_gpu.getDevice();
 
@@ -68,7 +68,7 @@ ustd::result  performBufferCopies(rndr::Application &program_gpu)
   return {};
 }
 
-ustd::result renderFrame(rndr::Application &program_gpu)
+ustd::result renderFrame(rndr::Context &program_gpu)
 {
 
   const wgpu::Device  &device   = program_gpu.getDevice();
@@ -79,8 +79,15 @@ ustd::result renderFrame(rndr::Application &program_gpu)
   program_gpu.processEvents();
 
   /* get current texture to write to */
+  auto surface_optional = program_gpu.getSurface();
+  if (!surface_optional) {
+    return ustd::unexpected(surface_optional.message());
+  }
+
+  const wgpu::Surface &surface = *surface_optional;
+
   wgpu::SurfaceTexture surface_tex;
-  program_gpu.getSurface().GetCurrentTexture(&surface_tex);
+  surface.GetCurrentTexture(&surface_tex);
 
   if (surface_tex.status != wgpu::SurfaceGetCurrentTextureStatus::Success) {
     std::ostringstream oss;
@@ -148,15 +155,15 @@ ustd::result renderFrame(rndr::Application &program_gpu)
   /* program_gpu.blockOnFuture(work_future); */
 
   /* finally, present the next texture */
-  program_gpu.getSurface().Present();
+  surface.Present();
 
   return {};
 }
 
 int main()
 {
-  rndr::Application program_gpu;
-  ustd::result      init_result = program_gpu.initialize();
+  rndr::Context program_gpu;
+  ustd::result  init_result = program_gpu.initialize();
 
   if (!init_result.ok()) {
     std::cerr << "Initialization failed for reason: " << init_result;

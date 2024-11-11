@@ -9,7 +9,7 @@
  *
  */
 
-#include <rndr/types/globals.h>
+#include "rndr/context.h"
 
 #include "webgpu/webgpu_cpp.h"
 #include <GLFW/glfw3.h>
@@ -19,7 +19,7 @@
 
 namespace rndr {
 
-wgpu::RenderPipeline createRenderPipeline(Globals &globals);
+wgpu::RenderPipeline createRenderPipeline(Context &context);
 
 namespace helpers {
 

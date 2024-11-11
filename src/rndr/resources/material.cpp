@@ -13,7 +13,7 @@
 
 namespace rndr {
 
-Material::Material(Globals &globals) : GlobalAccess(globals)
+Material::Material(Context &context) : GlobalAccess(context)
 {
   const char *shaderSource = R"(
 @vertex
