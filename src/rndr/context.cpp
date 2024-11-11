@@ -34,10 +34,16 @@ Context::~Context()
   glfwDestroyWindow(getWindow());
   glfwTerminate();
 
-  wgpuQueueRelease(queue_.MoveToCHandle());
-  wgpuDeviceRelease(device_.MoveToCHandle());
-  instance_.ProcessEvents();
-  wgpuInstanceRelease(instance_.MoveToCHandle());
+  if (queue_) {
+    wgpuQueueRelease(queue_.MoveToCHandle());
+  }
+  if (device_) {
+    wgpuDeviceRelease(device_.MoveToCHandle());
+  }
+  if (instance_) {
+    instance_.ProcessEvents();
+    wgpuInstanceRelease(instance_.MoveToCHandle());
+  }
 }
 
 /* PRE-INIT SETTERS */
