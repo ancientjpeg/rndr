@@ -11,7 +11,8 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    env: ACTIONS_UNIT_TESTS: "1"
+    env: 
+      ACTIONS_UNIT_TESTS: "1"
     steps:
 
       - name: Apt Install Dependencies
