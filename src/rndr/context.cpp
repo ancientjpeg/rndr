@@ -31,8 +31,10 @@ Context::~Context()
     wgpuSurfaceRelease(surface_->MoveToCHandle());
   }
 
-  glfwDestroyWindow(getWindow());
-  glfwTerminate();
+  if (window_) {
+    glfwDestroyWindow(window_);
+    glfwTerminate();
+  }
 
   if (queue_) {
     wgpuQueueRelease(queue_.MoveToCHandle());
@@ -201,8 +203,10 @@ ustd::result Context::initialize(int width, int height)
   width_  = width;
   height_ = height;
 
-  if (auto result = initializeGLFW(); !result) {
-    return result;
+  if (uses_surface_) {
+    if (auto result = initializeGLFW(); !result) {
+      return result;
+    }
   }
 
   if (auto result = initializeWebGPU(); !result) {
