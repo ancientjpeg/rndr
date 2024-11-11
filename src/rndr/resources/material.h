@@ -13,13 +13,13 @@
 #define RNDR_MATERIAL_H_
 
 #include "renderable_mesh.h"
-#include "rndr/types/globals.h"
+#include "rndr/context.h"
 
 namespace rndr {
 
 class Material : public GlobalAccess {
 
-  Material(Globals &globals);
+  Material(Context &context);
 
   Material(const Material &)            = delete;
   Material &operator=(const Material &) = delete;

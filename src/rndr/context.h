@@ -1,5 +1,5 @@
 /**
- * @file globals.h
+ * @file context.h
  * @author Jackson Wyatt Kaplan (JwyattK@gmail.com)
  * @brief
  * @version 0.1
@@ -9,25 +9,28 @@
  *
  */
 
-#ifndef RNDR_GLOBALS_H_
-#define RNDR_GLOBALS_H_
+#ifndef RNDR_CONTEXT_H_
+#define RNDR_CONTEXT_H_
 
 #include "ustd/expected.h"
 
 #include <GLFW/glfw3.h>
+#include <optional>
 #include <vector>
 #include <webgpu/webgpu_cpp.h>
 
 namespace rndr {
 
-class Globals {
+class Context {
 public:
   /**
    * @brief Set the required features. Call this before a call to `initialize`.
    */
   void setRequiredFeatures(std::vector<wgpu::FeatureName> required_features);
 
-  virtual ~Globals();
+  Context(bool uses_surface = true);
+
+  virtual ~Context();
 
   /**
    * @brief Set the required limits. Call this before a call to `initialize`.
@@ -48,7 +51,7 @@ public:
 
   const wgpu::Device        &getDevice();
   const wgpu::Limits        &getLimits();
-  const wgpu::Surface       &getSurface();
+  const ustd::expected<wgpu::Surface>   getSurface();
   const std::vector<wgpu::FeatureName> &getFeatures();
   const wgpu::Queue                    &getQueue();
   GLFWwindow                           *getWindow();
@@ -64,12 +67,12 @@ public:
   void         processEvents();
 
 protected:
-  wgpu::Instance instance_ = {};
-  wgpu::Device   device_   = {};
-  wgpu::Queue    queue_    = {};
+  wgpu::Instance               instance_ = {};
+  wgpu::Device                 device_   = {};
+  wgpu::Queue                  queue_    = {};
 
-  wgpu::Surface  surface_  = {};
-  GLFWwindow    *window_   = nullptr;
+  std::optional<wgpu::Surface> surface_  = {};
+  GLFWwindow                  *window_   = nullptr;
 
   /* Features and limits */
   std::vector<wgpu::FeatureName> features_          = {};
@@ -85,29 +88,30 @@ private:
   ustd::result initializeWebGPU();
   ustd::result initializeGLFW();
 
+  const bool   uses_surface_;
   bool         initialized_ = false;
 };
 
 class GlobalAccess {
 
 public:
-  GlobalAccess(Globals &globals) : globals_(globals)
+  GlobalAccess(Context &context) : context_(context)
   {
   }
 
 protected:
-  Globals &getGlobals()
+  Context &getContext()
   {
-    return globals_;
+    return context_;
   }
 
   const wgpu::Device &getDevice()
   {
-    return globals_.getDevice();
+    return context_.getDevice();
   }
 
 private:
-  Globals &globals_;
+  Context &context_;
 };
 
 } // namespace rndr

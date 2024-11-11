@@ -1,6 +1,6 @@
 add_library(rndr STATIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/application.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/application.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/context.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/context.cpp
 )
 
 Include(FetchContent)
